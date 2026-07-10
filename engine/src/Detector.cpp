@@ -12,7 +12,7 @@ DetBase::DetBase() {}
 
 DetBase::~DetBase() {}
 
-DetBase::DetBase(uint RESLN_X, uint RESLN_Y, double hfov, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ) {
+DetBase::DetBase(uint RESLN_X, uint RESLN_Y, double hfov, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ){
 	stlUnitToPix = RESLN_X / (2.0*L*std::tan(0.5*hfov*DEG2RAD));
 	init(RESLN_X, RESLN_Y, stlUnitToPix, L, eulerX, eulerY, eulerZ, offsetX, offsetY, offsetZ);
 }
@@ -179,6 +179,11 @@ void DetBase::flipBufferUD() {
 	for (uint i = 0; i < lBuffer_flipped.wh; ++i) { lBuffer.buf[i] = lBuffer_flipped.buf[i]; }
 }
 
+MaterialPath::MaterialPath(uint RESLN_X, uint RESLN_Y, double hfov, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ) {
+	stlUnitToPix = RESLN_X / (2.0*L*std::tan(0.5*hfov*DEG2RAD));
+	init(RESLN_X, RESLN_Y, stlUnitToPix, L, eulerX, eulerY, eulerZ, offsetX, offsetY, offsetZ);
+}
+
 void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
 	vm::vector S = { 0.0, 0.0, 0.0 };
 	det_origin[0] = 0.0;
@@ -265,11 +270,6 @@ void MaterialPath::calcLengthBuffer(geom::SuperMesh &superMesh, coord2d roi_bl, 
 		}
 	}
 	if (viewAlongNegativeZ && doFilpCorrection) { flipBufferUD(); }
-}
-
-MaterialPath::MaterialPath(uint RESLN_X, uint RESLN_Y, double hfov, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ) {
-	stlUnitToPix = RESLN_X / (2.0*L*std::tan(0.5*hfov*DEG2RAD));
-	init(RESLN_X, RESLN_Y, stlUnitToPix, L, eulerX, eulerY, eulerZ, offsetX, offsetY, offsetZ);
 }
 
 LineOfSight::LineOfSight(uint RESLN_X, uint RESLN_Y, double hfov, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ){

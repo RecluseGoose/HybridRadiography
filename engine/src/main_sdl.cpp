@@ -27,8 +27,8 @@ int main(int argc, char* argv[]) {
 	auto t1 = std::chrono::high_resolution_clock::now();
 	std::cout << "File load time: " << std::chrono::duration<double>(t1 - t0).count() << std::endl;
 
-	int xres = 1200;
-	int yres = 1000;	
+	int xres = 400;
+	int yres = 471;	
 	t0 = std::chrono::high_resolution_clock::now();
 	int N = 10;
 	
@@ -41,37 +41,19 @@ int main(int argc, char* argv[]) {
 	std::cout << "Projected " << mesh.facetCount << " facets, averaged over " << N << " shots in average time of " << std::chrono::duration<double>(t1 - t0).count()*1e3 / N << " ms" << std::endl;
 	// Render
 	if (true) {
-		double it = 0.0;
 		if (1) {
 			RenWin renwin(xres, yres);
-			std::cout << "SDL Init was attempted in main" << std::endl;
-			std::cout << renwin.initialised << std::endl;
 			renwin.init();
-			std::cout << renwin.initialised << std::endl;
-			std::cout << "SDL Init was attempted in main" << std::endl;
-			std::cout << "renwin.init was attempted in main" << std::endl;
-			std::cout << "Testing the quit function:" << std::endl;
-			std::cout << renwin.trueUntilQuit() << std::endl;
-			std::cout << renwin.trueUntilQuit() << std::endl;
-			std::cout << "Quit function:tested" << std::endl;
-			std::cout << "testing material path" << std::endl;
-			MaterialPath bleugh(xres, yres, 45.,
-						it, 0.0, 0.0,
-						0.0, 0.0, -300.);
-			bleugh.calcLengthBuffer(mesh);
-			bleugh.fixColours(0.0, 50.0, bleugh.lBuffer);
-			renwin.loadIntoBuffer(bleugh.lBuffer);
-			renwin.update();
+
 			while (renwin.trueUntilQuit()) {
 				for (double angle = 0.0; angle < 360.0; angle += 5.0) {
 					MaterialPath d(xres, yres, 45.,
-						it, 0.0, 0.0,
+						angle, angle, 0.0,
 						0.0, 0.0, -300.);
 					d.calcLengthBuffer(mesh);
 					d.fixColours(0.0, 30.0, d.lBuffer);
 					renwin.loadIntoBuffer(d.lBuffer);
 					renwin.update();
-					it += 1;
 					double sum = 0;
 					for (uint i = 0; i < d.lBuffer.wh; ++i) {
 						sum += d.lBuffer.buf[i];
@@ -81,13 +63,13 @@ int main(int argc, char* argv[]) {
 			}
 		}
 		else if (0){
-
+			double angle = 0.0;
 			RenWin renwin(xres, yres);
 			renwin.init();
 			while (renwin.trueUntilQuit()) {
 				//for (double angle = 0.0; angle < 360.0; angle += 5.0){
 				MaterialPath d(xres, yres, 45.,
-					it, 0.0, 0.0,
+					angle, 0.0, 0.0,
 					0.0, 0.0, -500.);
 				vm::vector coordsIn[1];
 				coordsIn[0][0] = mesh.centre[0];
