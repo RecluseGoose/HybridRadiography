@@ -8,8 +8,9 @@ typedef unsigned int uint;
 typedef double coord2d[2];
 
 class DetBase {
+	double DEFAULT_FOV_CALC_DISTANCE = 100.0;
+
 public:
-	DetBase();
 	DetBase(uint RESLN_X, uint RESLN_Y, double hfov, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ);
 	DetBase(uint RESLN_X, uint RESLN_Y, double stlUnitToPix, double detDist, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ);
 	~DetBase();
@@ -18,9 +19,9 @@ public:
     void fixColours(double lmin, double lmax, Buffer<double> &buffer);
     // Physical parameters
 public:
-	double stlUnitToPix = 100.0;		// units of [pixel]/[stl unit] ... bigger is more zoom
-	uint RESLN_X = 1200;						// x-resolution (pixels)
-	uint RESLN_Y = 1000;						// y-resolution (pixels)
+	double stlUnitToPix_ = 100.0;		// units of [pixel]/[stl unit] ... bigger is more zoom
+	uint det_xres_ = 1200;						// x-resolution (pixels)
+	uint det_yres_ = 1000;					// y-resolution (pixels)
 	vm::vector det_origin;		// centre of coord sys
 	vm::matrix rotmat_w2d;	// rotation matrix b/w world and det
 	vm::matrix rotmat_d2w;	// rotation matrix b/w det and world
@@ -34,11 +35,11 @@ protected:
 	void projectToDet(unsigned long N, vm::vector coordsIn_w[], vm::vector S_w, coord2d detCoords_dp[]);
 	void projectToDet(geom::Facet & facet, vm::vector S_w, coord2d detCoords_dp[3]);
 	void detToWorld(vm::vector vec_in, vm::vector vec_out);
-	void init(uint RESLN_X, uint RESLN_Y, double stlUnitToPix, double detDist, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ);
+	//void init(uint RESLN_X, uint RESLN_Y, double stlUnitToPix, double detDist, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ);
 	void flipBufferLR();
 	void flipBufferUD();
 protected:
-	double L = 100.0; // detector distance... this default is used if hfov specified... probably for the best if this is never changed.
+	double det_dist_ = DEFAULT_FOV_CALC_DISTANCE;
 	bool initialised = false;
 	double detPixOffsX;
 	double detPixOffsY;
@@ -48,7 +49,7 @@ protected:
 
 class MaterialPath : public DetBase {
 public:
-	MaterialPath(uint RESLN_X, uint RESLN_Y, double hfov, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ);
+	using DetBase::DetBase;
 	void calcLengthBuffer(geom::Mesh &mesh);
 	void calcLengthBuffer(geom::SuperMesh &superMesh);
 	void calcLengthBuffer(geom::SuperMesh &superMesh, coord2d roi_bl, coord2d roi_tr);

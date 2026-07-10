@@ -8,30 +8,37 @@
 
 double DEG2RAD = 0.0174532925;
 
-DetBase::DetBase() {}
-
 DetBase::~DetBase() {}
 
-DetBase::DetBase(uint RESLN_X, uint RESLN_Y, double hfov, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ){
-	stlUnitToPix = RESLN_X / (2.0*L*std::tan(0.5*hfov*DEG2RAD));
-	init(RESLN_X, RESLN_Y, stlUnitToPix, L, eulerX, eulerY, eulerZ, offsetX, offsetY, offsetZ);
-}
-
-DetBase::DetBase(uint RESLN_X, uint RESLN_Y, double stlUnitToPix, double detDist, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ) {
-	init(RESLN_X, RESLN_Y, stlUnitToPix, detDist, eulerX, eulerY, eulerZ, offsetX, offsetY, offsetZ);
-}
-
-void DetBase::init(uint RESLN_X, uint RESLN_Y, double stlUnitToPix, double detDist, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ) {
-	this->RESLN_X = RESLN_X;
-	this->RESLN_Y = RESLN_Y;
-	this->stlUnitToPix = stlUnitToPix;
-	L = detDist;
-	detPixOffsX = 0.5*(RESLN_X - 1.0);
-	detPixOffsY = 0.5*(RESLN_Y - 1.0);
+DetBase::DetBase(uint xres, uint yres, double hfov, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ)
+: lBuffer(xres, yres)
+{
+	stlUnitToPix_ = xres / (2.0*det_dist_*std::tan(0.5*hfov*DEG2RAD));
+	det_xres_ = xres;
+	det_yres_ = yres;
+	detPixOffsX = 0.5*(xres - 1.0);
+	detPixOffsY = 0.5*(yres - 1.0);
 	initialised = true;
 	euler_matrix(eulerX, eulerY, eulerZ, sxyz, rotmat_w2d);
 	euler_matrix(-eulerZ, -eulerY, -eulerX, szyx, rotmat_d2w);
-	lBuffer = Buffer<double>(RESLN_X, RESLN_Y);
+	lBuffer.init(lDefault);
+	part_offset[0] = offsetX;
+	part_offset[1] = offsetY;
+	part_offset[2] = offsetZ;
+}
+
+DetBase::DetBase(uint xres, uint yres, double stlUnitToPix, double detDist, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ)
+: lBuffer(xres, yres)
+{
+	det_xres_ = xres;
+	det_yres_ = yres;
+	stlUnitToPix_ = stlUnitToPix;
+	det_dist_ = detDist;
+	detPixOffsX = 0.5*(xres - 1.0);
+	detPixOffsY = 0.5*(yres - 1.0);
+	initialised = true;
+	euler_matrix(eulerX, eulerY, eulerZ, sxyz, rotmat_w2d);
+	euler_matrix(-eulerZ, -eulerY, -eulerX, szyx, rotmat_d2w);
 	lBuffer.init(lDefault);
 	part_offset[0] = offsetX;
 	part_offset[1] = offsetY;
@@ -62,8 +69,6 @@ void DetBase::fixColours(double lmin, double lmax, Buffer<double> &buffer) {
 	}
 }
 
-
-
 // for list of coords N_coords long
 void DetBase::projectToDet(unsigned long N, vm::vector coordsIn_w[], vm::vector S_w, coord2d detCoords_dp[]) {
 	vm::vector coord_d;
@@ -79,8 +84,8 @@ void DetBase::projectToDet(unsigned long N, vm::vector coordsIn_w[], vm::vector 
 		//double alpha = std::abs( zs / (zs - zf) );
 		double alpha = zs / (zs - zf);
 		if (alpha > 0.0){
-			detCoords_dp[i][0] = stlUnitToPix * (coord_d[0] - S_d[0])*alpha + detPixOffsX;	// detector coordinates in pixels
-			detCoords_dp[i][1] = stlUnitToPix * (coord_d[1] - S_d[1])*alpha + detPixOffsY;  // detector coordinates in pixels
+			detCoords_dp[i][0] = stlUnitToPix_ * (coord_d[0] - S_d[0])*alpha + detPixOffsX;	// detector coordinates in pixels
+			detCoords_dp[i][1] = stlUnitToPix_ * (coord_d[1] - S_d[1])*alpha + detPixOffsY;  // detector coordinates in pixels
 		}
 		else{
 			for (geom::ulong j = 0; j < N; j++) {
@@ -107,7 +112,7 @@ void DetBase::projectAllToDet(unsigned long N, vm::vector coordsIn_w[], vm::vect
 	vm::vector S = { 0.0, 0.0, 0.0 };
 	det_origin[0] = 0.0;
 	det_origin[1] = 0.0;
-	det_origin[2] = viewAlongNegativeZ ? -L : L;
+	det_origin[2] = viewAlongNegativeZ ? -det_dist_ : det_dist_;
 	vm::add(S, meshCentre, S);
 	vm::subtract(S, part_offset, S);
 	vm::applyrotation(S, meshCentre, rotmat_d2w, S);
@@ -120,8 +125,8 @@ void DetBase::projectAllToDet(unsigned long N, vm::vector coordsIn_w[], vm::vect
 unsigned int DetBase::coordinateHitImage(unsigned long N, vm::vector coordsIn_w[], vm::vector meshCentre) {
 	int xmin = 1;	//0; // TODO: we're using minimum of 1 rather than 0, to match edge glitch in rasterer...
 	int ymin = 1;	//0;
-	int xmax = RESLN_X - 1;
-	int ymax = RESLN_Y - 1;
+	int xmax = det_xres_ - 1;
+	int ymax = det_yres_ - 1;
 	// project all coords 
 	coord2d *coordsOut_d;
 	coordsOut_d = new coord2d[N];
@@ -134,7 +139,7 @@ unsigned int DetBase::coordinateHitImage(unsigned long N, vm::vector coordsIn_w[
 		int y = (int)(coordsOut_d[i][1] + 0.5);
 		// append 
 		if ((x <= xmax) && (x >= xmin) && (y <= ymax) && (y >= ymin)) {
-			++lBuffer.buf[x + RESLN_X*y];
+			++lBuffer.buf[x + det_xres_*y];
 		}
 		else {
 			++outOfViewCtr;
@@ -154,12 +159,12 @@ void DetBase::detToWorld(vm::vector vec_in, vm::vector vec_out) {
 
 void DetBase::flipBufferLR() {
 	// Make flipped
-	Buffer<double> lBuffer_flipped(RESLN_X, RESLN_Y);
+	Buffer<double> lBuffer_flipped(det_xres_, det_yres_);
 	lBuffer_flipped.init();
-	for (uint x = 0; x < RESLN_X; ++x) {
-		for (uint y = 0; y < RESLN_Y; ++y) {
-			int y_ = y*RESLN_X;
-			lBuffer_flipped.buf[x + y_] = lBuffer.buf[(RESLN_X - x - 1) + y_];
+	for (uint x = 0; x < det_xres_; ++x) {
+		for (uint y = 0; y < det_yres_; ++y) {
+			int y_ = y*det_xres_;
+			lBuffer_flipped.buf[x + y_] = lBuffer.buf[(det_xres_ - x - 1) + y_];
 		}
 	}
 	// Copy into lBuffer
@@ -168,27 +173,22 @@ void DetBase::flipBufferLR() {
 
 void DetBase::flipBufferUD() {
 	// Make flipped
-	Buffer<double> lBuffer_flipped(RESLN_X, RESLN_Y);
+	Buffer<double> lBuffer_flipped(det_xres_, det_yres_);
 	lBuffer_flipped.init();
-	for (uint x = 0; x < RESLN_X; ++x) {
-		for (uint y = 0; y < RESLN_Y; ++y) {
-			lBuffer_flipped.buf[x + RESLN_X*y] = lBuffer.buf[x + RESLN_X*(RESLN_Y - y - 1)];
+	for (uint x = 0; x < det_xres_; ++x) {
+		for (uint y = 0; y < det_yres_; ++y) {
+			lBuffer_flipped.buf[x + det_xres_*y] = lBuffer.buf[x + det_xres_*(det_yres_ - y - 1)];
 		}
 	}
 	// Copy into lBuffer
 	for (uint i = 0; i < lBuffer_flipped.wh; ++i) { lBuffer.buf[i] = lBuffer_flipped.buf[i]; }
 }
 
-MaterialPath::MaterialPath(uint RESLN_X, uint RESLN_Y, double hfov, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ) {
-	stlUnitToPix = RESLN_X / (2.0*L*std::tan(0.5*hfov*DEG2RAD));
-	init(RESLN_X, RESLN_Y, stlUnitToPix, L, eulerX, eulerY, eulerZ, offsetX, offsetY, offsetZ);
-}
-
 void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
 	vm::vector S = { 0.0, 0.0, 0.0 };
 	det_origin[0] = 0.0;
 	det_origin[1] = 0.0;
-	det_origin[2] = viewAlongNegativeZ ? -L : L;
+	det_origin[2] = viewAlongNegativeZ ? -det_dist_ : det_dist_;
 	vm::add(S, mesh.centre, S);
 	vm::subtract(S, part_offset, S);
 	vm::applyrotation(S, mesh.centre, rotmat_d2w, S);
@@ -197,7 +197,7 @@ void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
 	vm::applyrotation(det_origin, mesh.centre, rotmat_d2w, det_origin);
 	vm::vector worldCoord;
 	coord2d detCoords_d[3];
-	double invScaling = 1.0 / stlUnitToPix;
+	double invScaling = 1.0 / stlUnitToPix_;
 	// run for every facet
 	for (geom::ulong i_fac = 0; i_fac < mesh.facetCount; ++i_fac) {
 		geom::Facet fac = mesh.facetList[i_fac];
@@ -205,7 +205,7 @@ void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
 		int facetSign = getFacetSign(S, fac, mesh.flipNorms);
 		projectToDet(fac, S, detCoords_d);
 		// BBraster and length calculator... required within loop
-		BoundingBoxRasterer raster(detCoords_d, RESLN_X, RESLN_Y);
+		BoundingBoxRasterer raster(detCoords_d, det_xres_, det_yres_);
 		LengthCalculator lengthCalc(fac, S);
 		// iterate through raster
 		while (raster.iterate()) {
@@ -215,7 +215,7 @@ void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
 				detToWorld(detVec, worldCoord);
 				// append length buffer
 				double l = lengthCalc.calcLength(fac.n, worldCoord, S);
-				lBuffer.buf[raster.x + raster.y*RESLN_X] -= l*facetSign;
+				lBuffer.buf[raster.x + raster.y*det_xres_] -= l*facetSign;
 			}
 		}
 	}
@@ -225,7 +225,7 @@ void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
 void MaterialPath::calcLengthBuffer(geom::SuperMesh &superMesh) {
 	// Set default ROI to full window
 	coord2d roi_bl = { 0.0, 0.0 };
-	coord2d roi_tr = { (double)RESLN_X - 1.0, (double)RESLN_Y - 1.0 };
+	coord2d roi_tr = { (double)det_xres_ - 1.0, (double)det_yres_ - 1.0 };
 	calcLengthBuffer(superMesh, roi_bl, roi_tr);
 }
 
@@ -234,7 +234,7 @@ void MaterialPath::calcLengthBuffer(geom::SuperMesh &superMesh, coord2d roi_bl, 
 	vm::vector S = { 0.0, 0.0, 0.0 };
 	det_origin[0] = 0.0;
 	det_origin[1] = 0.0;
-	det_origin[2] = viewAlongNegativeZ ? -L : L;
+	det_origin[2] = viewAlongNegativeZ ? -det_dist_ : det_dist_;
 	vm::add(S, superMesh.centre, S);
 	vm::subtract(S, part_offset, S);
 	vm::applyrotation(S, superMesh.centre, rotmat_d2w, S);
@@ -243,7 +243,7 @@ void MaterialPath::calcLengthBuffer(geom::SuperMesh &superMesh, coord2d roi_bl, 
 	vm::applyrotation(det_origin, superMesh.centre, rotmat_d2w, det_origin);
 	vm::vector worldCoord;
 	coord2d detCoords_d[3];
-	double invScaling = 1.0 / stlUnitToPix;
+	double invScaling = 1.0 / stlUnitToPix_;
 	// run for every facet
 	geom::ulong iFac = 0;
 	for (int iMesh = 0; iMesh < superMesh.meshCount; ++iMesh) {
@@ -254,7 +254,7 @@ void MaterialPath::calcLengthBuffer(geom::SuperMesh &superMesh, coord2d roi_bl, 
 			double densityAndFacetSign = superMesh.meshDensities[iMesh]*getFacetSign(S, fac, superMesh.meshFlipNorms[iMesh]);
 			projectToDet(fac, S, detCoords_d);
 			// BBraster and length calculator... required within loop
-			BoundingBoxRasterer raster(detCoords_d, RESLN_X, RESLN_Y , roi_bl, roi_tr);
+			BoundingBoxRasterer raster(detCoords_d, det_xres_, det_yres_ , roi_bl, roi_tr);
 			LengthCalculator lengthCalc(fac, S);
 			// iterate through raster
 			while (raster.iterate()) {
@@ -264,7 +264,7 @@ void MaterialPath::calcLengthBuffer(geom::SuperMesh &superMesh, coord2d roi_bl, 
 					detToWorld(detVec, worldCoord);
 					// append length buffer
 					double l = lengthCalc.calcLength(fac.n, worldCoord, S);
-					lBuffer.buf[raster.x + raster.y*RESLN_X] -= l * densityAndFacetSign;
+					lBuffer.buf[raster.x + raster.y*det_xres_] -= l * densityAndFacetSign;
 				}
 			}
 		}
@@ -272,10 +272,9 @@ void MaterialPath::calcLengthBuffer(geom::SuperMesh &superMesh, coord2d roi_bl, 
 	if (viewAlongNegativeZ && doFilpCorrection) { flipBufferUD(); }
 }
 
-LineOfSight::LineOfSight(uint RESLN_X, uint RESLN_Y, double hfov, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ){
-	stlUnitToPix = RESLN_X / (2.0*L*std::tan(0.5*hfov*DEG2RAD));
-	init(RESLN_X, RESLN_Y, stlUnitToPix, L, eulerX, eulerY, eulerZ, offsetX, offsetY, offsetZ);
-	cBuffer = Buffer<int>(RESLN_X, RESLN_Y);
+LineOfSight::LineOfSight(uint xres, uint yres, double hfov, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ)
+: DetBase(xres, yres, stlUnitToPix_, det_dist_, eulerX, eulerY, eulerZ, offsetX, offsetY, offsetZ), cBuffer(xres, yres)
+{
 	cBuffer.init(notSeenVal);
 }
 
@@ -288,7 +287,7 @@ void LineOfSight::calcVisible(geom::Mesh &mesh) {
 	vm::vector S = { 0.0, 0.0, 0.0 };
 	det_origin[0] = 0.0;
 	det_origin[1] = 0.0;
-	det_origin[2] = viewAlongNegativeZ ? -L : L;
+	det_origin[2] = viewAlongNegativeZ ? -det_dist_ : det_dist_;
 	vm::add(S, mesh.centre, S);
 	vm::subtract(S, part_offset, S);
 	vm::applyrotation(S, mesh.centre, rotmat_d2w, S);
@@ -297,7 +296,7 @@ void LineOfSight::calcVisible(geom::Mesh &mesh) {
 	vm::applyrotation(det_origin, mesh.centre, rotmat_d2w, det_origin);
 	vm::vector worldCoord;
 	coord2d detCoords_d[3];
-	double invScaling = 1.0 / stlUnitToPix;
+	double invScaling = 1.0 / stlUnitToPix_;
 	// set lBuffer to far away
 	for (uint i = 0; i < lBuffer.wh; ++i) {
 		lBuffer.buf[i] = lDefault;
@@ -312,7 +311,7 @@ void LineOfSight::calcVisible(geom::Mesh &mesh) {
 		if (facetSign > 0) { // face cull
 			projectToDet(fac, S, detCoords_d);
 			// BBraster and length calculator... required within loop
-			BoundingBoxRasterer raster(detCoords_d, RESLN_X, RESLN_Y);
+			BoundingBoxRasterer raster(detCoords_d, det_xres_, det_yres_);
 			LengthCalculator lengthCalc(fac, S);
 			// iterate through raster
 			while (raster.iterate()) {
@@ -322,9 +321,9 @@ void LineOfSight::calcVisible(geom::Mesh &mesh) {
 					detToWorld(detVec, worldCoord);
 					// append length buffer
 					double l = lengthCalc.calcLength(fac.n, worldCoord, S);
-					if (lBuffer.buf[raster.x + raster.y*RESLN_X] > l*facetSign) {
-						lBuffer.buf[raster.x + raster.y*RESLN_X] = l*facetSign;
-						cBuffer.buf[raster.x + raster.y*RESLN_X] = (int)i_fac;
+					if (lBuffer.buf[raster.x + raster.y*det_xres_] > l*facetSign) {
+						lBuffer.buf[raster.x + raster.y*det_xres_] = l*facetSign;
+						cBuffer.buf[raster.x + raster.y*det_xres_] = (int)i_fac;
 					}
 				}
 			}
