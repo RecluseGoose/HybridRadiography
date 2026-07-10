@@ -1,0 +1,11 @@
+fin_registration2.py
+    - Calculates registration for tile
+
+fin_whole.py
+    - Generates 2D contrast images for each defect... uses fin inds
+
+patch_analysis.py
+    - Generates contrast volumes for each defect
+
+chugs.py
+    - final output analysis

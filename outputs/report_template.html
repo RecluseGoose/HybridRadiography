@@ -1,0 +1,118 @@
+<!-- #######  MCTP REPORT TEMPLATE #########-->
+<body style="font-family: Helvetica">
+<h1 style="color: #5e9ca0;">&nbsp;</h1>
+<h1 style="text-align: center;"><strong>MCTP Registration Report</strong></h1>
+<table style="height: 49px; width: 321px; margin-left: auto; margin-right: auto;">
+<tbody>
+<tr>
+<td style="width: 130px;"><strong>Date produced:</strong></td>
+<td style="width: 110px;"><strong>{date}</strong></td>
+</tr>
+<tr>
+<td style="width: 130px;"><strong>Dataset name:</strong></td>
+<td style="width: 110px;"><strong>{datasetName}</strong></td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<table style="height: 49px; width: 500px; margin-left: auto; margin-right: auto;">
+<tbody>
+<tr>
+<td style="width: 200px;">Number of projections used</td>
+<td style="width: 213px;">{nProj}&nbsp;</td>
+</tr>
+<tr>
+<td style="width: 200px;">Projection indices used</td>
+<td style="width: 213px;">{projInds}&nbsp;</td>
+</tr>
+<tr>
+<td style="width: 200px;">Time taken</td>
+<td style="width: 213px;">{totalTime}</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<table style="height: 269px; width: 498px; margin-left: auto; margin-right: auto;"><caption><strong>Fit Parameters</strong></caption>
+<tbody>
+<tr style="height: 18px;">
+<td style="width: 90px; text-align: left; height: 18px;">Parameter</td>
+<td style="width: 195px; text-align: left; height: 18px;">Value</td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 90px; text-align: left; height: 18px;">Euler Angles</td>
+<td style="width: 195px; text-align: left; height: 18px;">{EulerAngles}</td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 90px; text-align: left; height: 18px;">Offsets On Table</td>
+<td style="width: 195px; text-align: left; height: 18px;">{Offsets}</td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 90px; text-align: left; height: 18px;">SOD</td>
+<td style="width: 195px; text-align: left; height: 18px;">{sod}</td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 90px; text-align: left; height: 18px;">SDD</td>
+<td style="width: 195px; text-align: left; height: 18px;">{sdd}</td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 90px; text-align: left; height: 18px;">Axis Offset</td>
+<td style="width: 195px; text-align: left; height: 18px;">{axOffs}</td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 90px; text-align: left; height: 18px;">Spec Exponent</td>
+<td style="width: 195px; text-align: left; height: 18px;">{specLam}</td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 90px; text-align: left; height: 18px;">Spec Offset</td>
+<td style="width: 195px; text-align: left; height: 18px;">{specOffs}</td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 90px; text-align: left; height: 18px;">Spec Amplitude</td>
+<td style="width: 195px; text-align: left; height: 18px;">{specAmpl}</td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 90px; text-align: left; height: 18px;">Spec Background</td>
+<td style="width: 195px; text-align: left; height: 18px;">{specBgVal}</td>
+</tr>
+</tbody>
+</table>
+<!--pagebr-->
+<table style="width: 498px; margin-left: auto; margin-right: auto;"><caption>
+<h2><strong>Projection {i}</strong></h2>
+</caption>
+<tbody>
+<tr>
+<td style="width: 238px;">Projection number:</td>
+<td style="width: 246px;">{iProj} of {nProj}</td>
+</tr>
+<tr>
+<td style="width: 238px;">Theta:</td>
+<td style="width: 246px;">{theta}</td>
+</tr>
+</tbody>
+</table>
+<table style="width: 498px; margin-left: auto; margin-right: auto;"><caption><strong>Final Result</strong></caption>
+<tbody>
+<tr>
+<td style="text-align: center; width: 498px;"><img src="{ref}" alt="" /></td>
+</tr>
+<tr>
+<td style="text-align: center; width: 498px;"><img src="{sim}" alt="" /></td>
+</tr>
+</tbody>
+</table>
+<table style="width: 498px; margin-left: auto; margin-right: auto;"><caption><strong>Difference Images</strong></caption>
+<tbody>
+<tr>
+<td style="text-align: center; width: 498px;"><img src="{diff1}" alt="" /></td>
+</tr>
+<tr>
+<td style="text-align: center; width: 498px;"><img src="{diff2}" alt="" /></td>
+</tr>
+<tr>
+<td style="text-align: center; width: 498px;"><img src="{diff3}" alt="" /></td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+</body>

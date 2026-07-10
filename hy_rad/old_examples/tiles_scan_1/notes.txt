@@ -1,0 +1,14 @@
+tiles_registration.py
+    - Calculates registration for tile
+
+tiles_bottom_fillet.py
+    - Generates 2D contrast images for each defect... uses fillet inds
+
+tiles_bottom_whole.py
+    - Generates 2D contrast images for each defect... uses tile inds
+
+patch_analysis.py
+    - Generates contrast volumes for each defect
+
+20190920_hyrad.py
+    - Generates detectability map
