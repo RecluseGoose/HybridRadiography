@@ -1,27 +1,4 @@
 #pragma once
-typedef unsigned int uint;
-typedef unsigned char uchar;
-
-template <class T> struct Buffer{
-	// Methods
-	Buffer(uint w, uint h);
-	~Buffer();
-	void init(T val = 0);
-	void resetBuffer (T val = 0 );
-	T getMax();
-	T getMin();
-	// Parameters
-	uint w;
-	uint h;
-	uint wh;
-	T *buf = nullptr;
-private:
-	bool bufInitialised = false;
-};
-
-
-/*
-#pragma once
 #include <cstddef>
 #include <algorithm>
 #include <vector>
@@ -71,4 +48,45 @@ private:
     uint m_height = 0;
 };
 
+/*
+
+#pragma once
+#include <vector>
+#include <cstddef>   // for size_t if needed
+
+using uint  = unsigned int;
+using uchar = unsigned char;
+
+template<typename T>
+class Buffer {
+public:
+    Buffer() = default;
+    Buffer(uint width, uint height);
+
+    // Rule of zero - let std::vector handle everything
+    ~Buffer() = default;
+
+    void init(T default_value = T{});
+    void reset(T value = T{});
+
+    T getMax() const;
+    T getMin() const;
+
+    // 2D access - this is the nice part
+    T& operator()(uint x, uint y);
+    const T& operator()(uint x, uint y) const;
+
+    // Raw access if you need it for speed
+    T* data();
+    const T* data() const;
+
+    uint width()  const { return m_width; }
+    uint height() const { return m_height; }
+    uint size()   const { return static_cast<uint>(m_data.size()); }
+
+private:
+    std::vector<T> m_data;
+    uint m_width = 0;
+    uint m_height = 0;
+};
 */

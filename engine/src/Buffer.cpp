@@ -65,8 +65,11 @@ template struct Buffer<uchar>;
 template struct Buffer<uint>;
 
 /*
+#include "Buffer.h"
+#include <algorithm>   // for std::fill, std::max_element, etc.
+
 template<typename T>
-Buffer<T>::Buffer(uint width, uint height) 
+Buffer<T>::Buffer(uint width, uint height)
     : m_width(width)
     , m_height(height)
     , m_data(width * height)
@@ -74,30 +77,58 @@ Buffer<T>::Buffer(uint width, uint height)
 }
 
 template<typename T>
-void Buffer<T>::init(T default_value) {
-    if (m_data.empty()) {
+void Buffer<T>::init(T default_value)
+{
+    if (m_data.empty() && m_width > 0 && m_height > 0) {
         m_data.resize(m_width * m_height, default_value);
     }
 }
 
 template<typename T>
-void Buffer<T>::reset(T value) {
+void Buffer<T>::reset(T value)
+{
     std::fill(m_data.begin(), m_data.end(), value);
 }
 
 template<typename T>
-T Buffer<T>::getMax() const {
+T Buffer<T>::getMax() const
+{
     if (m_data.empty()) return T{};
     return *std::max_element(m_data.begin(), m_data.end());
 }
 
 template<typename T>
-T Buffer<T>::getMin() const {
+T Buffer<T>::getMin() const
+{
     if (m_data.empty()) return T{};
     return *std::min_element(m_data.begin(), m_data.end());
 }
 
-// Explicit instantiations
+template<typename T>
+T& Buffer<T>::operator()(uint x, uint y)
+{
+    return m_data[y * m_width + x];
+}
+
+template<typename T>
+const T& Buffer<T>::operator()(uint x, uint y) const
+{
+    return m_data[y * m_width + x];
+}
+
+template<typename T>
+T* Buffer<T>::data()
+{
+    return m_data.data();
+}
+
+template<typename T>
+const T* Buffer<T>::data() const
+{
+    return m_data.data();
+}
+
+// Explicit instantiations (required for templates in .cpp)
 template class Buffer<float>;
 template class Buffer<double>;
 template class Buffer<int>;
