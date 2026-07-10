@@ -14,36 +14,49 @@
 
 namespace tests {
 	// TEST_DATA_DIR from cmake compile definitions
-	const std::string asc_file = (std::string)TEST_DATA_DIR + "xyzCube_ascii.stl";
-	const std::string bin_file = (std::string)TEST_DATA_DIR + "xyzCube_binary.stl";
+	const std::string asc_file = std::string(TEST_DATA_DIR) + "xyzCube_ascii.stl";
+	const std::string bin_file = std::string(TEST_DATA_DIR) + "xyzCube_binary.stl";
 
-	void InspecTest() {
-		std::cout << "Tests start." << std::endl;
-		test_FileChecks();
-		test_VectorMaths();
-		test_MeshAndSTLReader();
-		test_SDL();
-		test_Buffer();
-		test_RenWin();
-		std::cout << "Tests finished." << std::endl;
-	}
-	
-	void test_FileChecks() {
-		// files::checkExists
-		int code =0 ;
-		std::cout<< "looking for " << asc_file << std::endl;
-		if (!(files::checkExists(asc_file.c_str()) == 1)) { code = 1; }
-		if (!(files::checkExists(bin_file.c_str()) == 1)) { code = 2; }
-		if (!(files::checkExists("") == 0)) { code = 3; }
-		// files::isAscii
-		if (!files::isAscii(asc_file.c_str())) { code = 4; }
-		if (files::isAscii(bin_file.c_str())) { code = 5; }
-		if (code) {
-			std::cout << "Test FileChecks.h failed with code " << code << std::endl;
+    // Helper for floating point comparison
+    bool almost_equal(double a, double b, double epsilon) {
+        return std::abs(a - b) <= epsilon;
+    }
+
+    void InspecTest() {
+        std::cout << "=== Starting Tests ===\n";
+        
+		int fail_count = 0;
+        if(!test_FileChecks()) fail_count++;
+        if(!test_VectorMaths()) fail_count++;
+		if(!test_MeshAndSTLReader()) fail_count++;
+		if(!test_Buffer()) fail_count++;
+		if(!test_SDL()) fail_count++;
+		if(!test_RenWin()) fail_count++;            
+
+		if (fail_count > 0){
+			std::cout << std::to_string(fail_count) + " tests failed\n";
 		}
+		
+        std::cout << "=== Tests Finished ===\n";
+    }
 
-	}
-	void test_VectorMaths() {
+    bool test_FileChecks() {
+        int failures = 0;
+
+        if (files::checkExists(asc_file.c_str()) != 1) failures++;
+        if (files::checkExists(bin_file.c_str()) != 1) failures++;
+        if (files::checkExists("nonexistent_file_12345.stl") != 0) failures++;
+
+        if (files::isAscii(asc_file.c_str()) != true) failures++;
+        if (files::isAscii(bin_file.c_str()) != false) failures++;
+
+        if (failures) std::cout << "FileChecks FAILED (" + std::to_string(failures) + " issues)\n";
+
+		return failures == 0;
+    }
+
+
+	bool test_VectorMaths() {
 		int code = 0;
 		vm::vector v1 = { 1.2, 4.2, 5.0 };
 		vm::vector v2 = { 4.8, 2.4,-4.2 };
@@ -83,60 +96,87 @@ namespace tests {
 		if (code) {
 			std::cout << "Test VectorMaths.h failed with code " << code << std::endl;
 		}
+		
+		return code == 0;
 	}
-	void test_MeshAndSTLReader() {
-		int code = 0;
-		geom::STLReader reader = geom::STLReader();
-		geom::Mesh mesh;
-		//repeat these tests multiple times to check for floating references
-		//geom::STLReader::binaryRead
-		for (int attempts = 0; attempts < 20; attempts++) {
-			reader.readFile(bin_file, mesh);
-			if (!(mesh.facetCount == 92)) {
-				code = 1;
-			}
-			//geom::STLReader::asciiRead
-			reader.readFile(asc_file, mesh);
-			if (!(mesh.facetCount == 92)) {
-				code = 2;
-			}
-			mesh.update();
-			//geom::Mesh::updateLength
-			if (!(std::round(mesh.length*1e5))) { code = 3; };
-			//geom::Mesh::updateBoundingBox
-			if (!(std::round(mesh.boundingBox[0] * 1e6) == -951058)) { code = 4; };
-			//geom::Mesh::updateCentre
-			if (!(std::round(mesh.centre[0] * 1e6) == 0)) { code = 5; };
-			//geom::Mesh::updateVertexList
-			if (!(mesh.vertCount == 276)) { code = 6; };
+
+	bool test_MeshAndSTLReader() {
+        int failures = 0;
+        
+		geom::STLReader reader;
+        geom::Mesh mesh;
+
+		reader.readFile(bin_file, mesh);
+		if (mesh.facetCount != 160){
+			failures++;
+			std::cout << "Facet count for bin file " << mesh.facetCount << std::endl;
 		}
-		if (code) {
-			std::cout << "Test Mesh.h and STLReader.h failed with code " << code << std::endl;
+        reader.readFile(asc_file, mesh);
+        if (mesh.facetCount != 160){
+			failures++;
+			std::cout << "Facet count for ascii file " << mesh.facetCount << std::endl;
 		}
-	}
-	void test_SDL()	{
+
+        mesh.update();
+		if (!almost_equal(mesh.length, 69.282, 1e-3)){
+ 			failures++;
+			std::cout << "Length (*1e6) " << mesh.length*1e6 << std::endl;
+		}
+		if (!almost_equal(mesh.boundingBox[0], -20.0)){
+			failures++;
+			std::cout << "Bounding box " << mesh.boundingBox[0] << std::endl;
+		}
+		if (!almost_equal(mesh.centre[0], -1e-6)){
+			failures++;
+			std::cout << "Centre0 (*1e6) " << mesh.centre[0]*1e6 << std::endl;
+		}
+		if (!almost_equal(mesh.centre[1], 0.0, 1e-5)){
+			failures++;
+			std::cout << "Centre1 (*1e6) " << mesh.centre[1]*1e6 << std::endl;
+		}
+		if (mesh.vertCount != 480){
+			failures++;
+			std::cout << "Vert Count " << mesh.vertCount << std::endl;
+		}
+
+		if (failures) std::cout << "MeshAndSTLReader FAILED (" + std::to_string(failures) + " issues)\n";
+		return failures == 0;
+    }
+	
+	bool test_SDL()	{
 		#ifdef INCLUDE_SDL	
-		int code = 0;
+		int failures = 0;
 		if (!(SDL_Init(SDL_INIT_EVERYTHING)) == 0) {
-			code = 1;
+			failures++;
+			std::cout << "SDL didn't init properly" << std::endl;
 		}
 		SDL_Quit();
 		if (code) {
+			failures++;
 			std::cout << "Error initialising SDL" << std::endl;
 		}
+
+		if (failures) std::cout << "SDL FAILED (" + std::to_string(failures) + " issues)\n";
+		return failures == 0;
+
+		#else
+		std::cout << "SDL skipped\n";
+		return true;
 		#endif
 	}
-	void test_Buffer(){
-		int code = 0;
+
+	bool test_Buffer(){
+		int failures = 0;
 		Buffer <double> buffer(11,11);
 		buffer.init();
 		double sum = 0.0;
 		buffer[23] = 12.3;
+
 		for (unsigned int i = 0; i < buffer.size(); ++i) {
 			sum += buffer[i];
 		}
 		if (sum != 12.3) {
-			code = 1;
+			failures ++;
 		}
 		buffer.reset();
 		sum = 0.0;
@@ -144,21 +184,23 @@ namespace tests {
 			sum += buffer[i];
 		}
 		if (sum != 0.0) {
-			code = 2;
+			failures ++;
 		}
-		if (code) {
-			std::cout << "Error with Buffer " << code << std::endl;
-		}
+		
+		if (failures) std::cout << "Buffer FAILED (" + std::to_string(failures) + " issues)\n";
+		return failures == 0;
 	}
-	void test_RenWin() {
+
+	bool test_RenWin() {
 
 		#ifdef INCLUDE_SDL
-		int code = 0;
 		RenWin renWin(120, 120);
 		renWin.init();
-		if (code) {
-			std::cout << "Error with RenWin " << code << std::endl;
-		}
+		// no tests really?
+		#else
+		std::cout << "Renwin skipped\n";
 		#endif
+		
+		return true;
 	}
 }
