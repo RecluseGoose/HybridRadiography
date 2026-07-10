@@ -52,11 +52,6 @@ double DetBase::getRayFacDotProd(vm::vector source, geom::Facet &fac) {
 void DetBase::fixColours(double lmin, double lmax, Buffer<double> &buffer) {
 	double inv_lrange = 1.0 / (lmax - lmin);
 
-	std::cout << "Fixing Colours" << std::endl;
-	std::cout << buffer.getMax() << std::endl;
-	std::cout << buffer.getMin() << std::endl;
-	std::cout << "Fixing Colours" << std::endl;
-
 	for (unsigned int i = 0; i < buffer.wh; ++i) {
 		buffer.buf[i] = (buffer.buf[i] - lmin)*inv_lrange;
 	}
@@ -65,11 +60,6 @@ void DetBase::fixColours(double lmin, double lmax, Buffer<double> &buffer) {
 		if (buffer.buf[i] < 0.0) buffer.buf[i] = 0.0;
 		if (buffer.buf[i] > 1.0) buffer.buf[i] = 1.0;
 	}
-
-	std::cout << "End Fixing Colours" << std::endl;
-	std::cout << buffer.getMax() << std::endl;
-	std::cout << buffer.getMin() << std::endl;
-	std::cout << "End Fixing Colours" << std::endl;
 }
 
 
