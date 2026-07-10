@@ -1,7 +1,4 @@
 #include "_definitions.h"
-
-//#define INCLUDE_SDL
-#ifdef INCLUDE_SDL
 #include "RenWin.h"
 #include <iostream>
 
@@ -80,7 +77,8 @@ void RenWin::update(){
 	SDL_RenderPresent(m_renderer);
 }
 
-void RenWin::setPixel(int x, int y, Uint8 red, Uint8 green, Uint8 blue){
+
+void RenWin::setPixel(int xy, Uint8 red, Uint8 green, Uint8 blue){
 	Uint32 color = 0;
 	color += red;
 	color <<= 8;
@@ -89,7 +87,19 @@ void RenWin::setPixel(int x, int y, Uint8 red, Uint8 green, Uint8 blue){
 	color += blue;
 	color <<= 8;
 	color += 0xFF;
-	buffer.buf[x + y * WIDTH] = color;
+	buffer.buf[xy] = color;
+}
+
+void RenWin::setPixel(int xy, Uint8 val){
+	setPixel(xy, val, val, val);
+}
+
+void RenWin::setPixel(int x, int y, Uint8 red, Uint8 green, Uint8 blue){
+	setPixel(x + y * WIDTH, red, green, blue);
+}
+
+void RenWin::setPixel(int x, int y, Uint8 val){
+	setPixel(x + y * WIDTH, val);
 }
 
 bool RenWin::trueUntilQuit() {
@@ -108,49 +118,3 @@ void RenWin::show() {
 	const int FPS = 60;
 	const int framePeriod = 1000 / FPS; // frame period in ms
 }
-
-void RenWin::loadIntoBuffer(Buffer<double> &buffer){
-	for (unsigned long i = 0; i < buffer.wh; ++i) {
-		Uint32 color = 0;
-		color += uchar(buffer.buf[i] * 255);
-		color <<= 8;
-		color += uchar(buffer.buf[i] * 255);
-		color <<= 8;
-		color += uchar(buffer.buf[i] * 255);
-		color <<= 8;
-		color += 0xFF;
-		this->buffer.buf[i] = color;
-	}
-}
-
-void RenWin::loadIntoBuffer(Buffer<uint> &buffer) {
-	//TODO... build in some robustness
-	for (unsigned long i = 0; i < buffer.wh; ++i) {
-		Uint32 color = 0;
-		color += uchar(buffer.buf[i] * 255);
-		color <<= 8;
-		color += uchar(buffer.buf[i] * 255);
-		color <<= 8;
-		color += uchar(buffer.buf[i] * 255);
-		color <<= 8;
-		color += 0xFF;
-		this->buffer.buf[i] = color;
-	}
-}
-
-void RenWin::loadIntoBuffer(Buffer<int> &buffer) {
-	//TODO... build in some robustness
-	for (unsigned long i = 0; i < buffer.wh; ++i) {
-		//this->buffer.buf[i] = (Uint32)buffer.buf[i];
-		Uint32 color = 0;
-		color += uchar(buffer.buf[i]);
-		color <<= 8;
-		color += uchar(buffer.buf[i]);
-		color <<= 8;
-		color += uchar(buffer.buf[i]);
-		color <<= 8;
-		color += 0xFF;
-		this->buffer.buf[i] = color;
-	}
-}
-#endif

@@ -7,8 +7,8 @@
 #include "Mesh.h"
 #include "STLReader.h"
 #include "Buffer.h"
-#include "RenWin.h"
 #ifdef INCLUDE_SDL
+#include "RenWin.h"
 #include <SDL.h>
 #endif
 
@@ -151,11 +151,14 @@ namespace tests {
 		}
 	}
 	void test_RenWin() {
+
+		#ifdef INCLUDE_SDL
 		int code = 0;
 		RenWin renWin(120, 120);
 		renWin.init();
 		if (code) {
 			std::cout << "Error with RenWin " << code << std::endl;
 		}
+		#endif
 	}
 }

@@ -5,6 +5,8 @@ template<class T> Buffer<T>::Buffer(){}
 
 template <class T> Buffer<T>::Buffer(uint w, uint h) {
 	wh = w * h;
+	this->w = w;
+	this->h = h;
 	resetBuffer();
 }
 

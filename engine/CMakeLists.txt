@@ -15,7 +15,6 @@ set(MATPATH_SOURCES
     src/LengthCalc.cpp
     src/Mesh.cpp
     src/Rasterisation.cpp
-    src/RenWin.cpp
     src/STLReader.cpp
     src/VectorMaths.cpp
 #    src/material_path.cpp
@@ -40,6 +39,7 @@ add_executable(matpath
 )
 add_executable(matpath_sdl
     src/main_sdl.cpp 
+    src/RenWin.cpp
     ${MATPATH_SOURCES}
 )
 foreach (tgt matpath matpath_sdl)

@@ -1,8 +1,8 @@
 #pragma once
 #include "_definitions.h"
 #include "Buffer.h"
-#ifdef INCLUDE_SDL
 #include <SDL.h>
+
 
 
 class RenWin {
@@ -11,12 +11,14 @@ public:
 	~RenWin();
 	uint WIDTH, HEIGHT;
 	void update();
-	void setPixel(int x, int y, Uint8 red, Uint8 green, Uint8 blue);
 	void show();
-	void loadIntoBuffer(Buffer <double> &buffer);
-	void loadIntoBuffer(Buffer <uint> &buffer);
-	void loadIntoBuffer(Buffer <int> &buffer);
+	template <typename T> void loadIntoBuffer(Buffer <T> &buffer);
 	bool trueUntilQuit();
+private:
+	void setPixel(int xy, Uint8 red, Uint8 green, Uint8 blue);	
+	void setPixel(int xy, Uint8 val);	
+	void setPixel(int x, int y, Uint8 red, Uint8 green, Uint8 blue);
+	void setPixel(int x, int y, Uint8 val);	
 public:
 	bool init();
 	bool initialised = false;
@@ -29,19 +31,15 @@ private:
 private:
 	bool SDLinit();
 };
-#else
-class RenWin {
-public:
-	RenWin(uint w, uint h) {};
-	~RenWin() {};
-	uint WIDTH, HEIGHT;
-	void update() {};
-	void show() {};
-	void loadIntoBuffer(Buffer <double> &buffer) {};
-	void loadIntoBuffer(Buffer <uint> &buffer) {};
-	void loadIntoBuffer(Buffer <int> &buffer) {};
-	bool trueUntilQuit() { return false; };
-public:
-	bool init() { return true; };
-};
-#endif
+
+template <typename T>
+void RenWin::loadIntoBuffer(Buffer <T> &buffer){
+	if constexpr(std::is_same_v<T, double>){
+		for (unsigned long i = 0; i < buffer.wh; ++i){
+			setPixel(i, 255*buffer.buf[i]);
+		}
+	}
+	else{
+		static_assert(false, "Unsupported Buffer type loaded into buffer");
+	}	
+}
