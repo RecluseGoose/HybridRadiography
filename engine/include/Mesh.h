@@ -27,8 +27,10 @@ struct Facet {
 class Mesh {
 public:
 	Mesh();
-	Mesh(const char * stlfile);
+	//Mesh(const char * stlfile);
+	Mesh(const std::string stlfile);
 	void readin(const char * stlfile);
+	void readin(const std::string stlfile);
 	~Mesh();
 	void clear();			// Forces clearing, ensures against mem leaks
 	void update();

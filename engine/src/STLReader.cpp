@@ -7,17 +7,32 @@
 #include <chrono>
 
 namespace geom {
-void STLReader::readFile(const char * stlfile, Mesh &mesh) {
+
+// void STLReader::readFile(const char * stlfile, Mesh &mesh) {
+// 	mesh.clear();
+// 	if (!files::checkExists(stlfile)) {
+// 		std::cout << "File not found: " << stlfile << std::endl;
+// 		return;
+// 	}
+// 	if (files::isAscii(stlfile)) {
+// 		asciiRead(stlfile,mesh);
+// 	}
+// 	else {
+// 		binaryRead(stlfile,mesh);
+// 	}
+// }
+
+void STLReader::readFile(const std::string stlfile, Mesh &mesh) {
 	mesh.clear();
-	if (!files::checkExists(stlfile)) {
-		std::cout << "File not found: " << stlfile << std::endl;
+	if (!files::checkExists(stlfile.c_str())) {
+		std::cout << "File not found: " << stlfile.c_str() << std::endl;
 		return;
 	}
-	if (files::isAscii(stlfile)) {
-		asciiRead(stlfile,mesh);
+	if (files::isAscii(stlfile.c_str())) {
+		asciiRead(stlfile.c_str(), mesh);
 	}
 	else {
-		binaryRead(stlfile,mesh);
+		binaryRead(stlfile.c_str(), mesh);
 	}
 }
 

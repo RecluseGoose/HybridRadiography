@@ -10,15 +10,17 @@
 
 using namespace std;
 
-const std::string test_file = (std::string)TEST_DATA_DIR + "xyzCube_ascii.stl";
-
 //int main() {
 int main(int argc, char* argv[]) {
+#ifdef INCLUDE_SDL
 	// Run tests
 	tests::InspecTest();
 	// Load
 	auto t0 = std::chrono::high_resolution_clock::now();
-	geom::Mesh mesh(test_file);
+	geom::Mesh mesh("F:/testdata/fork.stl");
+	//geom::Mesh mesh("testdata/test.stl");
+	/*geom::STLReader reader;
+	reader.readFile("testdata/test.stl", mesh);*/
 	mesh.flipNorms = false;
 	auto t1 = std::chrono::high_resolution_clock::now();
 	std::cout << "File load time: " << std::chrono::duration<double>(t1 - t0).count() << std::endl;
@@ -82,7 +84,7 @@ int main(int argc, char* argv[]) {
 		
 	}
 
-	if (0) {
+	if (false) {
 		std::string filenames[] = { "D:/testdata/tile.stl", "D:/testdata/cube1.stl" };
 		vm::vector offsets[] = { { 0,0,0 } ,{ -3.5,-6,-10.0 } };
 		vm::vector angles[] = { { 0.0,0.0,0.0 } ,{ .0,0.0,0.0 } };
@@ -122,4 +124,7 @@ int main(int argc, char* argv[]) {
 
 	mesh.clear();
 	return 0;
+#else
+	return 0;
+#endif
 }

@@ -11,9 +11,11 @@
 #ifdef INCLUDE_SDL
 #include <SDL.h>
 #endif
+
 namespace tests {
-	const char *asc_file = "testdata/test_asc.stl";
-	const char *bin_file = "testdata/test_bin.stl";
+	// TEST_DATA_DIR from cmake compile definitions
+	const std::string asc_file = (std::string)TEST_DATA_DIR + "xyzCube_ascii.stl";
+	const std::string bin_file = (std::string)TEST_DATA_DIR + "xyzCube_binary.stl";
 
 	void InspecTest() {
 		std::cout << "Tests start." << std::endl;
@@ -29,12 +31,13 @@ namespace tests {
 	void test_FileChecks() {
 		// files::checkExists
 		int code =0 ;
-		if (!(files::checkExists(asc_file) == 1)) { code = 1; }
-		if (!(files::checkExists(bin_file) == 1)) { code = 2; }
+		std::cout<< "looking for " << asc_file << std::endl;
+		if (!(files::checkExists(asc_file.c_str()) == 1)) { code = 1; }
+		if (!(files::checkExists(bin_file.c_str()) == 1)) { code = 2; }
 		if (!(files::checkExists("") == 0)) { code = 3; }
 		// files::isAscii
-		if (!files::isAscii(asc_file)) { code = 4; }
-		if (files::isAscii(bin_file)) { code = 5; }
+		if (!files::isAscii(asc_file.c_str())) { code = 4; }
+		if (files::isAscii(bin_file.c_str())) { code = 5; }
 		if (code) {
 			std::cout << "Test FileChecks.h failed with code " << code << std::endl;
 		}
@@ -88,7 +91,7 @@ namespace tests {
 		//repeat these tests multiple times to check for floating references
 		//geom::STLReader::binaryRead
 		for (int attempts = 0; attempts < 20; attempts++) {
-			reader.readFile(bin_file,mesh);
+			reader.readFile(bin_file, mesh);
 			if (!(mesh.facetCount == 92)) {
 				code = 1;
 			}

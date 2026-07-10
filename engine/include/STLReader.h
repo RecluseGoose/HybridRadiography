@@ -5,7 +5,8 @@
 namespace geom {
 	class STLReader {
 	public:
-		void readFile(const char * stlfile, Mesh &mesh);
+	//void readFile(const char * stlfile, Mesh &mesh);
+	void readFile(const std::string stlfile, Mesh &mesh);
 	private:
 		// Functions for binary reading
 		void binaryRead(const char * stlfile, Mesh &mesh);

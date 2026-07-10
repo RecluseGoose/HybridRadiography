@@ -46,10 +46,18 @@ void Facet::calcPredomNormAxis() {
 
 Mesh::Mesh(){
 }
-Mesh::Mesh(const char * stlfile){
+//Mesh::Mesh(const char * stlfile){
+//	this->readin(stlfile);
+//}
+Mesh::Mesh(const std::string stlfile){
 	this->readin(stlfile);
 }
-void Mesh::readin(const char * stlfile){
+//void Mesh::readin(const char * stlfile){
+	// STLReader reader;
+	// reader.readFile(stlfile, *this);
+	// update();
+//}
+void Mesh::readin(const std::string stlfile){
 	STLReader reader;
 	reader.readFile(stlfile, *this);
 	update();
@@ -172,7 +180,7 @@ void SuperMesh::setup(int meshCount, std::string* filenames, vm::vector* angles,
 	int tempFacCount = 0;
 	for (int i=0; i < meshCount; ++i) {
 		Mesh *mesh = &meshList[i];
-		mesh->readin(filenames[i].c_str());
+		mesh->readin(filenames[i]);
 		tempFacCount += mesh->facetCount;
 		meshEndIdx[i] = tempFacCount; // ending index for ith mesh
 		meshDensities[i] = densities[i];

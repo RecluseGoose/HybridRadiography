@@ -6,7 +6,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 set(MATPATH_SOURCES
-    src/main.cpp
     src/Buffer.cpp
     src/Detector.cpp
     src/Euler.cpp
@@ -34,10 +33,18 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(SDL)
 
-# Make both matpath and matpath_sdl projects
+# Make two projects: one with SDL and one without (for use without GUI)
+add_executable(matpath
+    src/main.cpp 
+    ${MATPATH_SOURCES}
+)
+add_executable(matpath_sdl
+    src/main_sdl.cpp 
+    ${MATPATH_SOURCES}
+)
 foreach (tgt matpath matpath_sdl)
-    add_executable(${tgt} ${MATPATH_SOURCES})    
     target_include_directories(${tgt} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_compile_definitions(${tgt} PRIVATE TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/../testdata/")
     target_compile_features(${tgt} PRIVATE cxx_std_17)
     set_target_properties(${tgt} PROPERTIES
         CXX_STANDARD 17
@@ -50,7 +57,6 @@ endforeach()
 target_compile_definitions(matpath_sdl PRIVATE INCLUDE_SDL)
 target_compile_definitions(matpath_sdl PRIVATE SDL_MAIN_HANDLED)
 target_link_libraries(matpath_sdl PRIVATE SDL2::SDL2)
-
 
 # Optional: Enable multi-threading if needed
 #find_package(Threads REQUIRED)
