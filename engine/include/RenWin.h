@@ -19,11 +19,7 @@ private:
 	void setPixel(int xy, Uint8 val);	
 	void setPixel(int x, int y, Uint8 red, Uint8 green, Uint8 blue);
 	void setPixel(int x, int y, Uint8 val);	
-public:
-	bool init();
-	bool initialised = false;
 private:
-	bool failedInit = false;
 	SDL_Window *window_;
 	SDL_Renderer *renderer_;
 	SDL_Texture *texture_;

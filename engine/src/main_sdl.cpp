@@ -43,9 +43,9 @@ int main(int argc, char* argv[]) {
 	if (true) {
 		if (1) {
 			RenWin renwin(xres, yres);
-			renwin.init();
 
-			while (renwin.trueUntilQuit()) {
+			int i_iter = 0;
+			while (renwin.trueUntilQuit() && i_iter < 500) {
 				for (double angle = 0.0; angle < 360.0; angle += 5.0) {
 					MaterialPath d(xres, yres, 45.,
 						angle, angle, 0.0,
@@ -58,14 +58,14 @@ int main(int argc, char* argv[]) {
 					for (uint i = 0; i < d.lBuffer.wh; ++i) {
 						sum += d.lBuffer.buf[i];
 					}
-					std::cout << "the buffer sum is " << sum << std::endl;
+					++i_iter;
+					//std::cout << "the buffer sum is " << sum << std::endl;
 				}
 			}
 		}
 		else if (0){
 			double angle = 0.0;
 			RenWin renwin(xres, yres);
-			renwin.init();
 			while (renwin.trueUntilQuit()) {
 				//for (double angle = 0.0; angle < 360.0; angle += 5.0){
 				MaterialPath d(xres, yres, 45.,
@@ -96,7 +96,6 @@ int main(int argc, char* argv[]) {
 		geom::SuperMesh supermesh(2, filenames, angles, offsets, scales, densities, normFlips);
 		bool render = true;
 		RenWin renwin(xres, yres);
-		renwin.init();
 		double time = 0.0;
 		int N = 50;
 		coord2d roi_bl = { 200.0, 200.0 };

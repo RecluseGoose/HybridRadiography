@@ -11,9 +11,9 @@ template <class T> struct Buffer{
 	T getMax();
 	T getMin();
 	// Parameters
-	uint w = 0;
-	uint h = 0;
-	uint wh = 0;
+	uint w;
+	uint h;
+	uint wh;
 	T *buf = nullptr;
 private:
 	bool bufInitialised = false;

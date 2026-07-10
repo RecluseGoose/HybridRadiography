@@ -9,15 +9,13 @@ RenWin::RenWin(uint w, uint h)
 	texture_(NULL),
 	buffer(w, h)
 {
-	if ((SDL_Init(SDL_INIT_VIDEO)) != 0) {
-		failedInit = true;
-		std::cout << "SDL Init failed :(" << std::endl;
-	}
-	std::cout << SDL_GetError() << std::endl;
-	std::cout << "SDL Init attempted" << std::endl;
 	width_ = w;
 	height_ = h;
-	//buffer = Buffer<uint>(w, h);
+	if (!SDLinit()) {
+		std::cout << "SDL Init failed with message:" << std::endl;
+		std::cout << SDL_GetError() << std::endl;
+	}
+	buffer.init();
 }
 
 RenWin::~RenWin() {
@@ -27,40 +25,21 @@ RenWin::~RenWin() {
 	SDL_Quit();
 }
 
-bool RenWin::init(){
-	std::cout << "init level 0" << std::endl;
-
-	if (!initialised) {
-		std::cout << "init level 1" << std::endl;
-		if (SDLinit()) 
-		{
-			std::cout << "init level 2" << std::endl;
-			buffer.init();
-			initialised = true;
-			return true;
-		}
-	}
-	return false;	
-}
-
 bool RenWin::SDLinit(){
-	if (SDL_INIT_VIDEO < 0) {
-		std::cout << "SDL_INIT_VIDEO failed" << std::endl;
+	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		return false;
 	}
 	window_ = SDL_CreateWindow("hi!", width_, height_, SDL_WINDOW_KEYBOARD_GRABBED);
 	if (window_ == NULL) {
 		SDL_DestroyWindow(window_);
 		SDL_Quit();
-		std::cout << "SDL_CreateWindow failed" << std::endl;
 		return false;
 	}
-	renderer_ = SDL_CreateRenderer(window_, NULL); // -1 means...?
+	renderer_ = SDL_CreateRenderer(window_, NULL); // use default driver
 	if (renderer_ == NULL) {
 		SDL_DestroyRenderer(renderer_);
 		SDL_DestroyWindow(window_);
 		SDL_Quit();
-		std::cout << "SDL_CreateRenderer failed" << std::endl;
 		return false;
 	}
 	texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, width_, height_);
@@ -69,7 +48,6 @@ bool RenWin::SDLinit(){
 		SDL_DestroyTexture(texture_);
 		SDL_DestroyWindow(window_);
 		SDL_Quit();
-		std::cout << "SDL_CreateTexture failed" << std::endl;
 		return false;
 	}
 	return true;
