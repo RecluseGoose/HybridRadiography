@@ -9,7 +9,7 @@ class RenWin {
 public:
 	RenWin(uint w, uint h);
 	~RenWin();
-	uint WIDTH, HEIGHT;
+	uint width_, height_;
 	void update();
 	void show();
 	template <typename T> void loadIntoBuffer(Buffer <T> &buffer);

@@ -11,8 +11,8 @@ RenWin::RenWin(uint w, uint h) :
 	}
 	std::cout << SDL_GetError() << std::endl;
 	std::cout << "SDL Init attempted" << std::endl;
-	WIDTH = w;
-	HEIGHT = h;
+	width_ = w;
+	height_ = h;
 	buffer = Buffer<uint>(w, h);
 }
 
@@ -44,7 +44,7 @@ bool RenWin::SDLinit(){
 		std::cout << "SDL_INIT_VIDEO failed" << std::endl;
 		return false;
 	}
-	window_ = SDL_CreateWindow("hi!", WIDTH, HEIGHT, SDL_WINDOW_KEYBOARD_GRABBED);
+	window_ = SDL_CreateWindow("hi!", width_, height_, SDL_WINDOW_KEYBOARD_GRABBED);
 	if (window_ == NULL) {
 		SDL_DestroyWindow(window_);
 		SDL_Quit();
@@ -59,7 +59,7 @@ bool RenWin::SDLinit(){
 		std::cout << "SDL_CreateRenderer failed" << std::endl;
 		return false;
 	}
-	texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, WIDTH, HEIGHT);
+	texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, width_, height_);
 	if (texture_ == NULL) {
 		SDL_DestroyRenderer(renderer_);
 		SDL_DestroyTexture(texture_);
@@ -72,7 +72,7 @@ bool RenWin::SDLinit(){
 }
 
 void RenWin::update(){
-	SDL_UpdateTexture(texture_, NULL, buffer.buf, WIDTH * sizeof(Uint32));
+	SDL_UpdateTexture(texture_, NULL, buffer.buf, width_ * sizeof(Uint32));
 	SDL_RenderClear(renderer_);
 	SDL_RenderTexture(renderer_, texture_, NULL, NULL);
 	SDL_RenderPresent(renderer_);
@@ -96,11 +96,11 @@ void RenWin::setPixel(int xy, Uint8 val){
 }
 
 void RenWin::setPixel(int x, int y, Uint8 red, Uint8 green, Uint8 blue){
-	setPixel(x + y * WIDTH, red, green, blue);
+	setPixel(x + y * width_, red, green, blue);
 }
 
 void RenWin::setPixel(int x, int y, Uint8 val){
-	setPixel(x + y * WIDTH, val);
+	setPixel(x + y * width_, val);
 }
 
 bool RenWin::trueUntilQuit() {
