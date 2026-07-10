@@ -24,21 +24,13 @@ RenWin::~RenWin() {
 }
 
 bool RenWin::SDLinit(){
-	if (!SDL_Init(SDL_INIT_VIDEO)) {
-		return false;
-	}
+	if (!SDL_Init(SDL_INIT_VIDEO)) return false;
 	window_ = SDL_CreateWindow("Render Window", width_, height_, SDL_WINDOW_KEYBOARD_GRABBED);
-	if (!window_) {
-		return false;
-	}
+	if (!window_) return false;
 	renderer_ = SDL_CreateRenderer(window_, NULL); // use default driver
-	if (!renderer_) {
-		return false;
-	}
+	if (!renderer_) return false;
 	texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, width_, height_);
-	if (!texture_) {
-		return false;
-	}
+	if (!texture_) return false;
 	return true;
 }
 
@@ -49,7 +41,6 @@ void RenWin::update(){
 	SDL_RenderTexture(renderer_, texture_, NULL, NULL);
 	SDL_RenderPresent(renderer_);
 }
-
 
 void RenWin::setPixel(int xy, Uint8 red, Uint8 green, Uint8 blue){
 	Uint32 color = 0;

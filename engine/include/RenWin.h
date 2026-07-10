@@ -9,9 +9,7 @@ class RenWin {
 public:
 	RenWin(uint w, uint h);
 	~RenWin();
-	uint width_, height_;
 	void update();
-	void show();
 	template <typename T> void writeValues(Buffer <T> &buffer);
 	bool waitForUserQuit();
 private:
@@ -21,6 +19,7 @@ private:
 	void setPixel(int x, int y, Uint8 val);	
 	bool SDLinit();
 private:
+	uint width_, height_;
 	SDL_Window *window_ = nullptr;
 	SDL_Renderer *renderer_ = nullptr;
 	SDL_Texture *texture_ = nullptr;
