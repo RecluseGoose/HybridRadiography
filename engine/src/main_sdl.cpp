@@ -7,6 +7,7 @@
 #include "Mesh.h"
 #include "Detector.h"
 #include "RenWin.h"
+#include <SDL3/SDL_main.h>
 
 
 const std::string test_file = (std::string)TEST_DATA_DIR + "xyzCube_ascii.stl";
@@ -57,16 +58,10 @@ int main(int argc, char* argv[]) {
 			MaterialPath bleugh(xres, yres, 45.,
 						it, 0.0, 0.0,
 						0.0, 0.0, -300.);
-			std::cout << "material path made okay" << std::endl;
 			bleugh.calcLengthBuffer(mesh);
-			std::cout << "material tested okay" << std::endl;
 			bleugh.fixColours(0.0, 50.0, bleugh.lBuffer);
-			std::cout << "material path fixed colours" << std::endl;
 			renwin.loadIntoBuffer(bleugh.lBuffer);
-			std::cout << "material path loaded" << std::endl;
 			renwin.update();
-			std::cout << "renwin updated" << std::endl;
-			std::cout << "time to loooop" << std::endl;
 			while (renwin.trueUntilQuit()) {
 				for (double angle = 0.0; angle < 360.0; angle += 5.0) {
 					MaterialPath d(xres, yres, 45.,
@@ -81,7 +76,7 @@ int main(int argc, char* argv[]) {
 					for (uint i = 0; i < d.lBuffer.wh; ++i) {
 						sum += d.lBuffer.buf[i];
 					}
-					std::cout << sum << std::endl;
+					std::cout << "the buffer sum is " << sum << std::endl;
 				}
 			}
 		}

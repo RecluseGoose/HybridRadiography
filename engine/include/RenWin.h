@@ -1,7 +1,7 @@
 #pragma once
 #include "_definitions.h"
 #include "Buffer.h"
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 
 
@@ -24,9 +24,9 @@ public:
 	bool initialised = false;
 private:
 	bool failedInit = false;
-	SDL_Window *m_window;
-	SDL_Renderer *m_renderer;
-	SDL_Texture *m_texture;
+	SDL_Window *window_;
+	SDL_Renderer *renderer_;
+	SDL_Texture *texture_;
 	Buffer<uint> buffer;
 private:
 	bool SDLinit();

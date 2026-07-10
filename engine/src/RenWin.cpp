@@ -1,9 +1,10 @@
 #include "_definitions.h"
 #include "RenWin.h"
 #include <iostream>
+#include <SDL3/SDL_events.h>
 
 RenWin::RenWin(uint w, uint h) :
-	m_window(NULL), m_renderer(NULL), m_texture(NULL){
+	window_(NULL), renderer_(NULL), texture_(NULL){
 	if ((SDL_Init(SDL_INIT_VIDEO)) != 0) {
 		failedInit = true;
 		std::cout << "SDL Init failed :(" << std::endl;
@@ -16,9 +17,9 @@ RenWin::RenWin(uint w, uint h) :
 }
 
 RenWin::~RenWin() {
-	SDL_DestroyRenderer(m_renderer);
-	SDL_DestroyTexture(m_texture);
-	SDL_DestroyWindow(m_window);
+	SDL_DestroyRenderer(renderer_);
+	SDL_DestroyTexture(texture_);
+	SDL_DestroyWindow(window_);
 	SDL_Quit();
 }
 
@@ -43,26 +44,26 @@ bool RenWin::SDLinit(){
 		std::cout << "SDL_INIT_VIDEO failed" << std::endl;
 		return false;
 	}
-	m_window = SDL_CreateWindow("Inspec", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
-	if (m_window == NULL) {
-		SDL_DestroyWindow(m_window);
+	window_ = SDL_CreateWindow("hi!", WIDTH, HEIGHT, SDL_WINDOW_KEYBOARD_GRABBED);
+	if (window_ == NULL) {
+		SDL_DestroyWindow(window_);
 		SDL_Quit();
 		std::cout << "SDL_CreateWindow failed" << std::endl;
 		return false;
 	}
-	m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_PRESENTVSYNC); // -1 means...?
-	if (m_renderer == NULL) {
-		SDL_DestroyRenderer(m_renderer);
-		SDL_DestroyWindow(m_window);
+	renderer_ = SDL_CreateRenderer(window_, NULL); // -1 means...?
+	if (renderer_ == NULL) {
+		SDL_DestroyRenderer(renderer_);
+		SDL_DestroyWindow(window_);
 		SDL_Quit();
 		std::cout << "SDL_CreateRenderer failed" << std::endl;
 		return false;
 	}
-	m_texture = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, WIDTH, HEIGHT);
-	if (m_texture == NULL) {
-		SDL_DestroyRenderer(m_renderer);
-		SDL_DestroyTexture(m_texture);
-		SDL_DestroyWindow(m_window);
+	texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, WIDTH, HEIGHT);
+	if (texture_ == NULL) {
+		SDL_DestroyRenderer(renderer_);
+		SDL_DestroyTexture(texture_);
+		SDL_DestroyWindow(window_);
 		SDL_Quit();
 		std::cout << "SDL_CreateTexture failed" << std::endl;
 		return false;
@@ -71,10 +72,10 @@ bool RenWin::SDLinit(){
 }
 
 void RenWin::update(){
-	SDL_UpdateTexture(m_texture, NULL, buffer.buf, WIDTH * sizeof(Uint32));
-	SDL_RenderClear(m_renderer);
-	SDL_RenderCopy(m_renderer, m_texture, NULL, NULL);
-	SDL_RenderPresent(m_renderer);
+	SDL_UpdateTexture(texture_, NULL, buffer.buf, WIDTH * sizeof(Uint32));
+	SDL_RenderClear(renderer_);
+	SDL_RenderTexture(renderer_, texture_, NULL, NULL);
+	SDL_RenderPresent(renderer_);
 }
 
 
@@ -105,10 +106,11 @@ void RenWin::setPixel(int x, int y, Uint8 val){
 bool RenWin::trueUntilQuit() {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
-		const Uint8 *state = SDL_GetKeyboardState(NULL);
-		if ((event.type == SDL_QUIT) || state[SDL_SCANCODE_KP_ENTER] || state[SDL_SCANCODE_RETURN]) {
+		const bool *key_states = SDL_GetKeyboardState(NULL);
+		if (event.type == SDL_EVENT_QUIT || (key_states[SDL_SCANCODE_ESCAPE])) {
 			return false;			
 		}
+		SDL_Delay(10);
 	}
 	return true;
 }
