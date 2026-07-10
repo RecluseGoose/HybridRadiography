@@ -1,6 +1,6 @@
 ## Hybrid Radiography
 
-This is a repository for the X-ray simulation capability developed by the MTC across various CRPs and customer projects.
+This is a repository for rapid generation of synthetic X-ray images.
 
 
 ## Installation
