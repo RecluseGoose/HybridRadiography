@@ -3,8 +3,12 @@
 #include <iostream>
 #include <SDL3/SDL_events.h>
 
-RenWin::RenWin(uint w, uint h) :
-	window_(NULL), renderer_(NULL), texture_(NULL){
+RenWin::RenWin(uint w, uint h)
+: 	window_(NULL),
+	renderer_(NULL),
+	texture_(NULL),
+	buffer(w, h)
+{
 	if ((SDL_Init(SDL_INIT_VIDEO)) != 0) {
 		failedInit = true;
 		std::cout << "SDL Init failed :(" << std::endl;
@@ -13,7 +17,7 @@ RenWin::RenWin(uint w, uint h) :
 	std::cout << "SDL Init attempted" << std::endl;
 	width_ = w;
 	height_ = h;
-	buffer = Buffer<uint>(w, h);
+	//buffer = Buffer<uint>(w, h);
 }
 
 RenWin::~RenWin() {

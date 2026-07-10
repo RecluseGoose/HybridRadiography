@@ -4,7 +4,6 @@ typedef unsigned char uchar;
 
 template <class T> struct Buffer{
 	// Methods
-	Buffer();
 	Buffer(uint w, uint h);
 	~Buffer();
 	void init(T val = 0);
