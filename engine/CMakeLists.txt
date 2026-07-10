@@ -22,6 +22,13 @@ set(MATPATH_SOURCES
 #    src/py_module.cpp
 )
 
+add_library(matpathlib STATIC ${MATPATH_SOURCES})
+
+target_include_directories(matpathlib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_definitions(matpathlib PUBLIC TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/../testdata/")
+
+target_compile_features(matpathlib PUBLIC cxx_std_17)
+
 # Deal with SDL2
 include(FetchContent)
 FetchContent_Declare(
@@ -29,34 +36,28 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
     GIT_TAG release-2.32.x
 )
-
 FetchContent_MakeAvailable(SDL)
 
 # Make two projects: one with SDL and one without (for use without GUI)
 add_executable(matpath
-    src/main.cpp 
-    ${MATPATH_SOURCES}
+    src/main.cpp
 )
 add_executable(matpath_sdl
     src/main_sdl.cpp 
     src/RenWin.cpp
-    ${MATPATH_SOURCES}
 )
-foreach (tgt matpath matpath_sdl)
-    target_include_directories(${tgt} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-    target_compile_definitions(${tgt} PRIVATE TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/../testdata/")
-    target_compile_features(${tgt} PRIVATE cxx_std_17)
-    set_target_properties(${tgt} PROPERTIES
-        CXX_STANDARD 17
-        CXX_STANDARD_REQUIRED ON
-        CXX_EXTENSIONS OFF
-        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    )
-endforeach()
 
-target_compile_definitions(matpath_sdl PRIVATE INCLUDE_SDL)
-target_compile_definitions(matpath_sdl PRIVATE SDL_MAIN_HANDLED)
-target_link_libraries(matpath_sdl PRIVATE SDL2::SDL2)
+target_link_libraries(matpath PRIVATE
+    matpathlib
+)
+target_link_libraries(matpath_sdl PRIVATE
+    matpathlib
+    SDL2::SDL2
+)
+target_compile_definitions(matpath_sdl PRIVATE
+    INCLUDE_SDL
+    SDL_MAIN_HANDLED
+)
 
 # Optional: Enable multi-threading if needed
 #find_package(Threads REQUIRED)
