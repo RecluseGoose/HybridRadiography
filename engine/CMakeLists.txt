@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.20)
 project(matpath LANGUAGES CXX)
+include(FetchContent)
 
 option(BUILD_MATPATH_SDL "Add the SDL executable to the build?" ON)
 
+## =================== CONFIGURE COMMON DEPENDENCIES ===================
 # Output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -26,12 +28,21 @@ set(MATPATH_SOURCES
 
 add_library(matpathlib STATIC ${MATPATH_SOURCES})
 
+FetchContent_Declare(
+    glm
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG 1.0
+)
+FetchContent_MakeAvailable(glm)
+
+target_link_libraries(matpathlib PUBLIC glm::glm)
+
 target_include_directories(matpathlib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_definitions(matpathlib PUBLIC TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/../testdata/")
 
 target_compile_features(matpathlib PUBLIC cxx_std_17)
 
-# Make two projects: one with SDL and one without (for use without GUI)
+## =================== CONFIGURE matpath ===================
 add_executable(matpath
     src/main.cpp
 )
@@ -39,10 +50,10 @@ target_link_libraries(matpath PRIVATE
     matpathlib
 )
 
+## =================== CONFIGURE matpath_sdl ===================
 if (BUILD_MATPATH_SDL)
 
 # Deal with SDL3
-include(FetchContent)
 FetchContent_Declare(
     SDL
     GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
@@ -63,6 +74,8 @@ target_compile_definitions(matpath_sdl PRIVATE
     SDL_MAIN_HANDLED
 )
 endif()
+
+## =================== DREGS ===================
 
 # Optional: Enable multi-threading if needed
 #find_package(Threads REQUIRED)

@@ -173,6 +173,7 @@ bool BoundingBoxRasterer::iterate() {
 	case (ZERO_EXTENT):
 		return false;
 	}
+	return false;
 }
 
 bool BoundingBoxRasterer::evaluate() {
