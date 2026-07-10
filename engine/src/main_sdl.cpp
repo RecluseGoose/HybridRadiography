@@ -45,14 +45,14 @@ int main(int argc, char* argv[]) {
 			RenWin renwin(xres, yres);
 
 			int i_iter = 0;
-			while (renwin.trueUntilQuit() && i_iter < 500) {
+			while (renwin.waitForUserQuit() && i_iter < 500) {
 				for (double angle = 0.0; angle < 360.0; angle += 5.0) {
 					MaterialPath d(xres, yres, 45.,
 						angle, angle, 0.0,
 						0.0, 0.0, -300.);
 					d.calcLengthBuffer(mesh);
 					d.fixColours(0.0, 30.0, d.lBuffer);
-					renwin.loadIntoBuffer(d.lBuffer);
+					renwin.writeValues(d.lBuffer);
 					renwin.update();
 					double sum = 0;
 					for (uint i = 0; i < d.lBuffer.wh; ++i) {
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
 		else if (0){
 			double angle = 0.0;
 			RenWin renwin(xres, yres);
-			while (renwin.trueUntilQuit()) {
+			while (renwin.waitForUserQuit()) {
 				//for (double angle = 0.0; angle < 360.0; angle += 5.0){
 				MaterialPath d(xres, yres, 45.,
 					angle, 0.0, 0.0,
@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
 				coordsIn[0][2] = mesh.centre[2];
 				d.coordinateHitImage(1, coordsIn, mesh.centre);
 				d.fixColours(0.0, 1.0, d.lBuffer);
-				renwin.loadIntoBuffer(d.lBuffer);
+				renwin.writeValues(d.lBuffer);
 				renwin.update();
 			}
 		}
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
 				d.calcLengthBuffer(supermesh, roi_bl, roi_tr);
 				if (render){
 					d.fixColours(0.0, 15.0, d.lBuffer);
-					renwin.loadIntoBuffer(d.lBuffer);
+					renwin.writeValues(d.lBuffer);
 					renwin.update();
 				}
 				auto t1 = std::chrono::high_resolution_clock::now();

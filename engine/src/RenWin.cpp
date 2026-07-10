@@ -4,14 +4,12 @@
 #include <SDL3/SDL_events.h>
 
 RenWin::RenWin(uint w, uint h)
-: 	window_(NULL),
-	renderer_(NULL),
-	texture_(NULL),
-	buffer(w, h)
+:	buffer(w, h),
+	width_(w),
+	height_(h)
 {
-	width_ = w;
-	height_ = h;
-	if (!SDLinit()) {
+	initSuccess_ = SDLinit();
+	if (!initSuccess_) {
 		std::cout << "SDL Init failed with message:" << std::endl;
 		std::cout << SDL_GetError() << std::endl;
 	}
@@ -19,9 +17,9 @@ RenWin::RenWin(uint w, uint h)
 }
 
 RenWin::~RenWin() {
-	SDL_DestroyRenderer(renderer_);
-	SDL_DestroyTexture(texture_);
-	SDL_DestroyWindow(window_);
+	if (renderer_) SDL_DestroyRenderer(renderer_);
+	if (texture_) SDL_DestroyTexture(texture_);
+	if (window_) SDL_DestroyWindow(window_);
 	SDL_Quit();
 }
 
@@ -29,31 +27,23 @@ bool RenWin::SDLinit(){
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		return false;
 	}
-	window_ = SDL_CreateWindow("hi!", width_, height_, SDL_WINDOW_KEYBOARD_GRABBED);
-	if (window_ == NULL) {
-		SDL_DestroyWindow(window_);
-		SDL_Quit();
+	window_ = SDL_CreateWindow("Render Window", width_, height_, SDL_WINDOW_KEYBOARD_GRABBED);
+	if (!window_) {
 		return false;
 	}
 	renderer_ = SDL_CreateRenderer(window_, NULL); // use default driver
-	if (renderer_ == NULL) {
-		SDL_DestroyRenderer(renderer_);
-		SDL_DestroyWindow(window_);
-		SDL_Quit();
+	if (!renderer_) {
 		return false;
 	}
 	texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, width_, height_);
-	if (texture_ == NULL) {
-		SDL_DestroyRenderer(renderer_);
-		SDL_DestroyTexture(texture_);
-		SDL_DestroyWindow(window_);
-		SDL_Quit();
+	if (!texture_) {
 		return false;
 	}
 	return true;
 }
 
 void RenWin::update(){
+	if (!initSuccess_) return;
 	SDL_UpdateTexture(texture_, NULL, buffer.buf, width_ * sizeof(Uint32));
 	SDL_RenderClear(renderer_);
 	SDL_RenderTexture(renderer_, texture_, NULL, NULL);
@@ -85,7 +75,7 @@ void RenWin::setPixel(int x, int y, Uint8 val){
 	setPixel(x + y * width_, val);
 }
 
-bool RenWin::trueUntilQuit() {
+bool RenWin::waitForUserQuit() {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		const bool *key_states = SDL_GetKeyboardState(NULL);
@@ -95,10 +85,4 @@ bool RenWin::trueUntilQuit() {
 		SDL_Delay(10);
 	}
 	return true;
-}
-
-void RenWin::show() {
-	update();
-	const int FPS = 60;
-	const int framePeriod = 1000 / FPS; // frame period in ms
 }
