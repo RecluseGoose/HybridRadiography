@@ -3,8 +3,6 @@
 #include "Buffer.h"
 #include <SDL3/SDL.h>
 
-
-
 class RenWin {
 public:
 	RenWin(uint w, uint h);
@@ -13,8 +11,8 @@ public:
 	template <typename T> void writeValues(Buffer <T> &buffer);
 	bool waitForUserQuit();
 private:
-	void setPixel(int xy, Uint8 red, Uint8 green, Uint8 blue);	
-	void setPixel(int xy, Uint8 val);	
+	void setPixel(int i, Uint8 red, Uint8 green, Uint8 blue);	
+	void setPixel(int i, Uint8 val);	
 	void setPixel(int x, int y, Uint8 red, Uint8 green, Uint8 blue);
 	void setPixel(int x, int y, Uint8 val);	
 	bool SDLinit();
@@ -30,8 +28,8 @@ private:
 template <typename T>
 void RenWin::writeValues(Buffer <T> &buffer){
 	if constexpr(std::is_same_v<T, double>){
-		for (unsigned long i = 0; i < buffer.wh; ++i){
-			setPixel(i, 255*buffer.buf[i]);
+		for (unsigned long i = 0; i < buffer.getLength(); ++i){
+			setPixel(i, 255*buffer[i]);
 		}
 	}
 	else{

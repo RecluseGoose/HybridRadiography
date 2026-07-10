@@ -55,8 +55,8 @@ int main(int argc, char* argv[]) {
 					renwin.writeValues(d.lBuffer);
 					renwin.update();
 					double sum = 0;
-					for (uint i = 0; i < d.lBuffer.wh; ++i) {
-						sum += d.lBuffer.buf[i];
+					for (uint i = 0; i < d.lBuffer.getLength(); ++i) {
+						sum += d.lBuffer[i];
 					}
 					++i_iter;
 					//std::cout << "the buffer sum is " << sum << std::endl;

@@ -59,13 +59,13 @@ double DetBase::getRayFacDotProd(vm::vector source, geom::Facet &fac) {
 void DetBase::fixColours(double lmin, double lmax, Buffer<double> &buffer) {
 	double inv_lrange = 1.0 / (lmax - lmin);
 
-	for (unsigned int i = 0; i < buffer.wh; ++i) {
-		buffer.buf[i] = (buffer.buf[i] - lmin)*inv_lrange;
+	for (unsigned int i = 0; i < buffer.getLength(); ++i) {
+		buffer[i] = (buffer[i] - lmin)*inv_lrange;
 	}
 	// Clamp to range
-	for (unsigned int i = 0; i < buffer.wh; ++i) {
-		if (buffer.buf[i] < 0.0) buffer.buf[i] = 0.0;
-		if (buffer.buf[i] > 1.0) buffer.buf[i] = 1.0;
+	for (unsigned int i = 0; i < buffer.getLength(); ++i) {
+		if (buffer[i] < 0.0) buffer[i] = 0.0;
+		if (buffer[i] > 1.0) buffer[i] = 1.0;
 	}
 }
 
@@ -139,7 +139,7 @@ unsigned int DetBase::coordinateHitImage(unsigned long N, vm::vector coordsIn_w[
 		int y = (int)(coordsOut_d[i][1] + 0.5);
 		// append 
 		if ((x <= xmax) && (x >= xmin) && (y <= ymax) && (y >= ymin)) {
-			++lBuffer.buf[x + det_xres_*y];
+			++lBuffer[x + det_xres_*y];
 		}
 		else {
 			++outOfViewCtr;
@@ -164,11 +164,11 @@ void DetBase::flipBufferLR() {
 	for (uint x = 0; x < det_xres_; ++x) {
 		for (uint y = 0; y < det_yres_; ++y) {
 			int y_ = y*det_xres_;
-			lBuffer_flipped.buf[x + y_] = lBuffer.buf[(det_xres_ - x - 1) + y_];
+			lBuffer_flipped[x + y_] = lBuffer[(det_xres_ - x - 1) + y_];
 		}
 	}
 	// Copy into lBuffer
-	for (uint i = 0; i < lBuffer_flipped.wh; ++i) { lBuffer.buf[i] = lBuffer_flipped.buf[i]; }
+	for (uint i = 0; i < lBuffer_flipped.getLength(); ++i) { lBuffer[i] = lBuffer_flipped[i]; }
 }
 
 void DetBase::flipBufferUD() {
@@ -177,11 +177,11 @@ void DetBase::flipBufferUD() {
 	lBuffer_flipped.init();
 	for (uint x = 0; x < det_xres_; ++x) {
 		for (uint y = 0; y < det_yres_; ++y) {
-			lBuffer_flipped.buf[x + det_xres_*y] = lBuffer.buf[x + det_xres_*(det_yres_ - y - 1)];
+			lBuffer_flipped[x + det_xres_*y] = lBuffer[x + det_xres_*(det_yres_ - y - 1)];
 		}
 	}
 	// Copy into lBuffer
-	for (uint i = 0; i < lBuffer_flipped.wh; ++i) { lBuffer.buf[i] = lBuffer_flipped.buf[i]; }
+	for (uint i = 0; i < lBuffer_flipped.getLength(); ++i) { lBuffer[i] = lBuffer_flipped[i]; }
 }
 
 void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
@@ -215,7 +215,7 @@ void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
 				detToWorld(detVec, worldCoord);
 				// append length buffer
 				double l = lengthCalc.calcLength(fac.n, worldCoord, S);
-				lBuffer.buf[raster.x + raster.y*det_xres_] -= l*facetSign;
+				lBuffer[raster.x + raster.y*det_xres_] -= l*facetSign;
 			}
 		}
 	}
@@ -264,7 +264,7 @@ void MaterialPath::calcLengthBuffer(geom::SuperMesh &superMesh, coord2d roi_bl, 
 					detToWorld(detVec, worldCoord);
 					// append length buffer
 					double l = lengthCalc.calcLength(fac.n, worldCoord, S);
-					lBuffer.buf[raster.x + raster.y*det_xres_] -= l * densityAndFacetSign;
+					lBuffer[raster.x + raster.y*det_xres_] -= l * densityAndFacetSign;
 				}
 			}
 		}
@@ -298,8 +298,8 @@ void LineOfSight::calcVisible(geom::Mesh &mesh) {
 	coord2d detCoords_d[3];
 	double invScaling = 1.0 / stlUnitToPix_;
 	// set lBuffer to far away
-	for (uint i = 0; i < lBuffer.wh; ++i) {
-		lBuffer.buf[i] = lDefault;
+	for (uint i = 0; i < lBuffer.getLength(); ++i) {
+		lBuffer[i] = lDefault;
 	}
 	// run for every facet
 	for (uint i_fac = 0; i_fac < mesh.facetCount; ++i_fac) {
@@ -321,16 +321,16 @@ void LineOfSight::calcVisible(geom::Mesh &mesh) {
 					detToWorld(detVec, worldCoord);
 					// append length buffer
 					double l = lengthCalc.calcLength(fac.n, worldCoord, S);
-					if (lBuffer.buf[raster.x + raster.y*det_xres_] > l*facetSign) {
-						lBuffer.buf[raster.x + raster.y*det_xres_] = l*facetSign;
-						cBuffer.buf[raster.x + raster.y*det_xres_] = (int)i_fac;
+					if (lBuffer[raster.x + raster.y*det_xres_] > l*facetSign) {
+						lBuffer[raster.x + raster.y*det_xres_] = l*facetSign;
+						cBuffer[raster.x + raster.y*det_xres_] = (int)i_fac;
 					}
 				}
 			}
 		}
 	}
-	for (uint i = 0; i < cBuffer.wh; ++i) {
-		int idx = cBuffer.buf[i];
+	for (uint i = 0; i < cBuffer.getLength(); ++i) {
+		int idx = cBuffer[i];
 		if (!(idx < 0)){
 			visVec[idx] = true;
 		}

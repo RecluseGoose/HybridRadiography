@@ -1,72 +1,5 @@
 #include "Buffer.h"
-#include <iostream>
-
-template <class T> Buffer<T>::Buffer(uint w, uint h) {
-	wh = w * h;
-	this->w = w;
-	this->h = h;
-	resetBuffer();
-}
-
-template <class T> Buffer<T>::~Buffer() {
-	if (bufInitialised) {
-		delete[] buf;
-	}	
-	buf = nullptr;
-}
-
-template<class T>void Buffer<T>::init(T val){
-	if (!bufInitialised) {
-		buf = new T[wh];
-		bufInitialised = true;
-		resetBuffer(val);
-	}
-}
-
-template <class T> void Buffer<T>::resetBuffer(T val){
-	if (bufInitialised) {
-		for (uint i = 0; i < wh; ++i) {
-			buf[i] = val;
-		}
-	}
-}
-
-template <class T> T Buffer<T>::getMax()
-{
-	T val = (wh > 0) ? buf[0] : NULL;
-	
-    for (uint i = 0; i < wh; ++i) {
-		if (buf[i] > val){
-			val = buf[i];
-		}
-	}
-	
-	return val;
-}
-
-template <class T> T Buffer<T>::getMin()
-{
-	T val = (wh > 0) ? buf[0] : NULL;
-	
-    for (uint i = 0; i < wh; ++i) {
-		if (buf[i] < val){
-			val = buf[i];
-		}
-	}
-	
-	return val;
-}
-
-// Need to instantiate specific classes for template for compliler...
-template struct Buffer<float>;
-template struct Buffer<double>;
-template struct Buffer<int>;
-template struct Buffer<uchar>;
-template struct Buffer<uint>;
-
-/*
-#include "Buffer.h"
-#include <algorithm>   // for std::fill, std::max_element, etc.
+#include <algorithm>
 
 template<typename T>
 Buffer<T>::Buffer(uint width, uint height)
@@ -91,6 +24,12 @@ void Buffer<T>::reset(T value)
 }
 
 template<typename T>
+uint Buffer<T>::getLength() const
+{
+    return static_cast<uint>(m_data.size());
+}
+
+template<typename T>
 T Buffer<T>::getMax() const
 {
     if (m_data.empty()) return T{};
@@ -104,34 +43,9 @@ T Buffer<T>::getMin() const
     return *std::min_element(m_data.begin(), m_data.end());
 }
 
-template<typename T>
-T& Buffer<T>::operator()(uint x, uint y)
-{
-    return m_data[y * m_width + x];
-}
-
-template<typename T>
-const T& Buffer<T>::operator()(uint x, uint y) const
-{
-    return m_data[y * m_width + x];
-}
-
-template<typename T>
-T* Buffer<T>::data()
-{
-    return m_data.data();
-}
-
-template<typename T>
-const T* Buffer<T>::data() const
-{
-    return m_data.data();
-}
-
-// Explicit instantiations (required for templates in .cpp)
+// Explicit template instantiations
 template class Buffer<float>;
 template class Buffer<double>;
 template class Buffer<int>;
 template class Buffer<unsigned char>;
 template class Buffer<unsigned int>;
-*/

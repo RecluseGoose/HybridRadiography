@@ -36,13 +36,13 @@ bool RenWin::SDLinit(){
 
 void RenWin::update(){
 	if (!initSuccess_) return;
-	SDL_UpdateTexture(texture_, NULL, buffer.buf, width_ * sizeof(Uint32));
+	SDL_UpdateTexture(texture_, NULL, buffer.data(), width_ * sizeof(Uint32));
 	SDL_RenderClear(renderer_);
 	SDL_RenderTexture(renderer_, texture_, NULL, NULL);
 	SDL_RenderPresent(renderer_);
 }
 
-void RenWin::setPixel(int xy, Uint8 red, Uint8 green, Uint8 blue){
+void RenWin::setPixel(int i, Uint8 red, Uint8 green, Uint8 blue){
 	Uint32 color = 0;
 	color += red;
 	color <<= 8;
@@ -51,7 +51,7 @@ void RenWin::setPixel(int xy, Uint8 red, Uint8 green, Uint8 blue){
 	color += blue;
 	color <<= 8;
 	color += 0xFF;
-	buffer.buf[xy] = color;
+	buffer[i] = color;
 }
 
 void RenWin::setPixel(int xy, Uint8 val){

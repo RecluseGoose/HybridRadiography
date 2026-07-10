@@ -131,17 +131,17 @@ namespace tests {
 		Buffer <double> buffer(11,11);
 		buffer.init();
 		double sum = 0.0;
-		buffer.buf[23] = 12.3;
-		for (unsigned int i = 0; i < buffer.wh; ++i) {
-			sum += buffer.buf[i];
+		buffer[23] = 12.3;
+		for (unsigned int i = 0; i < buffer.getLength(); ++i) {
+			sum += buffer[i];
 		}
 		if (sum != 12.3) {
 			code = 1;
 		}
-		buffer.resetBuffer();
+		buffer.reset();
 		sum = 0.0;
-		for (unsigned int i = 0; i < buffer.wh; ++i) {
-			sum += buffer.buf[i];
+		for (unsigned int i = 0; i < buffer.getLength(); ++i) {
+			sum += buffer[i];
 		}
 		if (sum != 0.0) {
 			code = 2;
