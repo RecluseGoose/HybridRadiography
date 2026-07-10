@@ -42,13 +42,13 @@ FetchContent_MakeAvailable(SDL)
 add_executable(matpath
     src/main.cpp
 )
+target_link_libraries(matpath PRIVATE
+    matpathlib
+)
+
 add_executable(matpath_sdl
     src/main_sdl.cpp 
     src/RenWin.cpp
-)
-
-target_link_libraries(matpath PRIVATE
-    matpathlib
 )
 target_link_libraries(matpath_sdl PRIVATE
     matpathlib
