@@ -8,40 +8,65 @@
 #include "Detector.h"
 #include "RenWin.h"
 
+
+const std::string test_file = (std::string)TEST_DATA_DIR + "xyzCube_ascii.stl";
+
 using namespace std;
 
-//int main() {
 int main(int argc, char* argv[]) {
 #ifdef INCLUDE_SDL
+	SDL_SetMainReady();
 	// Run tests
 	tests::InspecTest();
 	// Load
 	auto t0 = std::chrono::high_resolution_clock::now();
-	geom::Mesh mesh("F:/testdata/fork.stl");
-	//geom::Mesh mesh("testdata/test.stl");
-	/*geom::STLReader reader;
-	reader.readFile("testdata/test.stl", mesh);*/
+	geom::Mesh mesh(test_file);
+
 	mesh.flipNorms = false;
 	auto t1 = std::chrono::high_resolution_clock::now();
 	std::cout << "File load time: " << std::chrono::duration<double>(t1 - t0).count() << std::endl;
-	// Calc lengths
+
 	int xres = 1200;
-	int yres = 1000;
-	
+	int yres = 1000;	
 	t0 = std::chrono::high_resolution_clock::now();
 	int N = 10;
+	
 	for (int i = 0; i < N; ++i) {
 		MaterialPath d(xres, yres, 30., 0.0, 90.0, 0.0, 0.0, 0.0, 300.);
 		d.calcLengthBuffer(mesh);
 	}
+
 	t1 = std::chrono::high_resolution_clock::now();
 	std::cout << "Projected " << mesh.facetCount << " facets, averaged over " << N << " shots in average time of " << std::chrono::duration<double>(t1 - t0).count()*1e3 / N << " ms" << std::endl;
 	// Render
 	if (true) {
 		double it = 0.0;
-		if (0) {
+		if (1) {
 			RenWin renwin(xres, yres);
+			std::cout << "SDL Init was attempted in main" << std::endl;
+			std::cout << renwin.initialised << std::endl;
 			renwin.init();
+			std::cout << renwin.initialised << std::endl;
+			std::cout << "SDL Init was attempted in main" << std::endl;
+			std::cout << "renwin.init was attempted in main" << std::endl;
+			std::cout << "Testing the quit function:" << std::endl;
+			std::cout << renwin.trueUntilQuit() << std::endl;
+			std::cout << renwin.trueUntilQuit() << std::endl;
+			std::cout << "Quit function:tested" << std::endl;
+			std::cout << "testing material path" << std::endl;
+			MaterialPath bleugh(xres, yres, 45.,
+						it, 0.0, 0.0,
+						0.0, 0.0, -300.);
+			std::cout << "material path made okay" << std::endl;
+			bleugh.calcLengthBuffer(mesh);
+			std::cout << "material tested okay" << std::endl;
+			bleugh.fixColours(0.0, 50.0, bleugh.lBuffer);
+			std::cout << "material path fixed colours" << std::endl;
+			renwin.loadIntoBuffer(bleugh.lBuffer);
+			std::cout << "material path loaded" << std::endl;
+			renwin.update();
+			std::cout << "renwin updated" << std::endl;
+			std::cout << "time to loooop" << std::endl;
 			while (renwin.trueUntilQuit()) {
 				for (double angle = 0.0; angle < 360.0; angle += 5.0) {
 					MaterialPath d(xres, yres, 45.,

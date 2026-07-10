@@ -50,25 +50,29 @@ double DetBase::getRayFacDotProd(vm::vector source, geom::Facet &fac) {
 }
 
 void DetBase::fixColours(double lmin, double lmax, Buffer<double> &buffer) {
-	double actualMin = buffer.buf[RESLN_X];
-	double actualMax = buffer.buf[RESLN_X];
-	unsigned int els = RESLN_X * RESLN_Y;
 	double inv_lrange = 1.0 / (lmax - lmin);
-	// Get actuals
-	for (unsigned int i = RESLN_X; i < els; ++i) {
-		if (buffer.buf[i] < actualMin) actualMin = buffer.buf[i];
-		if (buffer.buf[i] > actualMax) actualMax = buffer.buf[i];
-	}
-	// Scale to range
-	for (unsigned int i = 0; i < els; ++i) {
+
+	std::cout << "Fixing Colours" << std::endl;
+	std::cout << buffer.getMax() << std::endl;
+	std::cout << buffer.getMin() << std::endl;
+	std::cout << "Fixing Colours" << std::endl;
+
+	for (unsigned int i = 0; i < buffer.wh; ++i) {
 		buffer.buf[i] = (buffer.buf[i] - lmin)*inv_lrange;
 	}
 	// Clamp to range
-	for (unsigned int i = 0; i < els; ++i) {
-		if (buffer.buf[i] < 0) buffer.buf[i] = 0.0;
-		if (buffer.buf[i] > 1) buffer.buf[i] = 1.0;
+	for (unsigned int i = 0; i < buffer.wh; ++i) {
+		if (buffer.buf[i] < 0.0) buffer.buf[i] = 0.0;
+		if (buffer.buf[i] > 1.0) buffer.buf[i] = 1.0;
 	}
+
+	std::cout << "End Fixing Colours" << std::endl;
+	std::cout << buffer.getMax() << std::endl;
+	std::cout << buffer.getMin() << std::endl;
+	std::cout << "End Fixing Colours" << std::endl;
 }
+
+
 
 // for list of coords N_coords long
 void DetBase::projectToDet(unsigned long N, vm::vector coordsIn_w[], vm::vector S_w, coord2d detCoords_dp[]) {

@@ -15,8 +15,8 @@ public:
 	~DetBase();
 	void projectAllToDet(unsigned long N, vm::vector coordsIn_w[], vm::vector meshCentre, coord2d coordsOut_d[]);
 	unsigned int coordinateHitImage(unsigned long N, vm::vector coordsIn_w[], vm::vector meshCentre);
-	void fixColours(double lmin, double lmax, Buffer<double> &buffer);
-// Physical parameters
+    void fixColours(double lmin, double lmax, Buffer<double> &buffer);
+    // Physical parameters
 public:
 	double stlUnitToPix = 100.0;		// units of [pixel]/[stl unit] ... bigger is more zoom
 	uint RESLN_X = 1200;						// x-resolution (pixels)

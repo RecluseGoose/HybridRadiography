@@ -19,8 +19,8 @@ public:
 	bool trueUntilQuit();
 public:
 	bool init();
+	bool initialised = false;
 private:
-	bool initialised;
 	bool failedInit = false;
 	SDL_Window *m_window;
 	SDL_Renderer *m_renderer;

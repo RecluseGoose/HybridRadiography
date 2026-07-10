@@ -36,6 +36,32 @@ template <class T> void Buffer<T>::resetBuffer(T val){
 	}
 }
 
+template <class T> T Buffer<T>::getMax()
+{
+	T val = (wh > 0) ? buf[0] : NULL;
+	
+    for (uint i = 0; i < wh; ++i) {
+		if (buf[i] > val){
+			val = buf[i];
+		}
+	}
+	
+	return val;
+}
+
+template <class T> T Buffer<T>::getMin()
+{
+	T val = (wh > 0) ? buf[0] : NULL;
+	
+    for (uint i = 0; i < wh; ++i) {
+		if (buf[i] < val){
+			val = buf[i];
+		}
+	}
+	
+	return val;
+}
+
 // Need to instantiate specific classes for template for compliler...
 template struct Buffer<float>;
 template struct Buffer<double>;

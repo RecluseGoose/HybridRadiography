@@ -1,13 +1,18 @@
 #include "_definitions.h"
+
+//#define INCLUDE_SDL
 #ifdef INCLUDE_SDL
 #include "RenWin.h"
 #include <iostream>
 
 RenWin::RenWin(uint w, uint h) :
 	m_window(NULL), m_renderer(NULL), m_texture(NULL){
-	if (!(SDL_Init(SDL_INIT_EVERYTHING)) == 0) {
+	if ((SDL_Init(SDL_INIT_VIDEO)) != 0) {
 		failedInit = true;
+		std::cout << "SDL Init failed :(" << std::endl;
 	}
+	std::cout << SDL_GetError() << std::endl;
+	std::cout << "SDL Init attempted" << std::endl;
 	WIDTH = w;
 	HEIGHT = h;
 	buffer = Buffer<uint>(w, h);
@@ -21,8 +26,13 @@ RenWin::~RenWin() {
 }
 
 bool RenWin::init(){
+	std::cout << "init level 0" << std::endl;
+
 	if (!initialised) {
-		if (SDLinit()) {
+		std::cout << "init level 1" << std::endl;
+		if (SDLinit()) 
+		{
+			std::cout << "init level 2" << std::endl;
 			buffer.init();
 			initialised = true;
 			return true;
@@ -33,12 +43,14 @@ bool RenWin::init(){
 
 bool RenWin::SDLinit(){
 	if (SDL_INIT_VIDEO < 0) {
+		std::cout << "SDL_INIT_VIDEO failed" << std::endl;
 		return false;
 	}
 	m_window = SDL_CreateWindow("Inspec", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
 	if (m_window == NULL) {
 		SDL_DestroyWindow(m_window);
 		SDL_Quit();
+		std::cout << "SDL_CreateWindow failed" << std::endl;
 		return false;
 	}
 	m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_PRESENTVSYNC); // -1 means...?
@@ -46,6 +58,7 @@ bool RenWin::SDLinit(){
 		SDL_DestroyRenderer(m_renderer);
 		SDL_DestroyWindow(m_window);
 		SDL_Quit();
+		std::cout << "SDL_CreateRenderer failed" << std::endl;
 		return false;
 	}
 	m_texture = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, WIDTH, HEIGHT);
@@ -54,6 +67,7 @@ bool RenWin::SDLinit(){
 		SDL_DestroyTexture(m_texture);
 		SDL_DestroyWindow(m_window);
 		SDL_Quit();
+		std::cout << "SDL_CreateTexture failed" << std::endl;
 		return false;
 	}
 	return true;
@@ -96,7 +110,6 @@ void RenWin::show() {
 }
 
 void RenWin::loadIntoBuffer(Buffer<double> &buffer){
-	//TODO... build in some robustness
 	for (unsigned long i = 0; i < buffer.wh; ++i) {
 		Uint32 color = 0;
 		color += uchar(buffer.buf[i] * 255);
@@ -109,6 +122,7 @@ void RenWin::loadIntoBuffer(Buffer<double> &buffer){
 		this->buffer.buf[i] = color;
 	}
 }
+
 void RenWin::loadIntoBuffer(Buffer<uint> &buffer) {
 	//TODO... build in some robustness
 	for (unsigned long i = 0; i < buffer.wh; ++i) {

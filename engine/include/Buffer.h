@@ -9,6 +9,8 @@ template <class T> struct Buffer{
 	~Buffer();
 	void init(T val = 0);
 	void resetBuffer (T val = 0 );
+	T getMax();
+	T getMin();
 	// Parameters
 	uint w = 0;
 	uint h = 0;
