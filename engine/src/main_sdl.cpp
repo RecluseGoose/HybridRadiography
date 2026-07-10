@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 					renwin.writeValues(d.lBuffer);
 					renwin.update();
 					double sum = 0;
-					for (uint i = 0; i < d.lBuffer.getLength(); ++i) {
+					for (uint i = 0; i < d.lBuffer.size(); ++i) {
 						sum += d.lBuffer[i];
 					}
 					++i_iter;

@@ -15,7 +15,6 @@ public:
 
     T getMax() const;
     T getMin() const;
-    uint getLength() const;
 
     // 1D access using square brackets (your preference)
     T& operator[](uint i) { return m_data[i]; }

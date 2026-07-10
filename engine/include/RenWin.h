@@ -28,7 +28,7 @@ private:
 template <typename T>
 void RenWin::writeValues(Buffer <T> &buffer){
 	if constexpr(std::is_same_v<T, double>){
-		for (unsigned long i = 0; i < buffer.getLength(); ++i){
+		for (unsigned long i = 0; i < buffer.size(); ++i){
 			setPixel(i, 255*buffer[i]);
 		}
 	}

@@ -132,7 +132,7 @@ namespace tests {
 		buffer.init();
 		double sum = 0.0;
 		buffer[23] = 12.3;
-		for (unsigned int i = 0; i < buffer.getLength(); ++i) {
+		for (unsigned int i = 0; i < buffer.size(); ++i) {
 			sum += buffer[i];
 		}
 		if (sum != 12.3) {
@@ -140,7 +140,7 @@ namespace tests {
 		}
 		buffer.reset();
 		sum = 0.0;
-		for (unsigned int i = 0; i < buffer.getLength(); ++i) {
+		for (unsigned int i = 0; i < buffer.size(); ++i) {
 			sum += buffer[i];
 		}
 		if (sum != 0.0) {

@@ -59,11 +59,11 @@ double DetBase::getRayFacDotProd(vm::vector source, geom::Facet &fac) {
 void DetBase::fixColours(double lmin, double lmax, Buffer<double> &buffer) {
 	double inv_lrange = 1.0 / (lmax - lmin);
 
-	for (unsigned int i = 0; i < buffer.getLength(); ++i) {
+	for (unsigned int i = 0; i < buffer.size(); ++i) {
 		buffer[i] = (buffer[i] - lmin)*inv_lrange;
 	}
 	// Clamp to range
-	for (unsigned int i = 0; i < buffer.getLength(); ++i) {
+	for (unsigned int i = 0; i < buffer.size(); ++i) {
 		if (buffer[i] < 0.0) buffer[i] = 0.0;
 		if (buffer[i] > 1.0) buffer[i] = 1.0;
 	}
@@ -168,7 +168,7 @@ void DetBase::flipBufferLR() {
 		}
 	}
 	// Copy into lBuffer
-	for (uint i = 0; i < lBuffer_flipped.getLength(); ++i) { lBuffer[i] = lBuffer_flipped[i]; }
+	for (uint i = 0; i < lBuffer_flipped.size(); ++i) { lBuffer[i] = lBuffer_flipped[i]; }
 }
 
 void DetBase::flipBufferUD() {
@@ -181,7 +181,7 @@ void DetBase::flipBufferUD() {
 		}
 	}
 	// Copy into lBuffer
-	for (uint i = 0; i < lBuffer_flipped.getLength(); ++i) { lBuffer[i] = lBuffer_flipped[i]; }
+	for (uint i = 0; i < lBuffer_flipped.size(); ++i) { lBuffer[i] = lBuffer_flipped[i]; }
 }
 
 void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
@@ -298,7 +298,7 @@ void LineOfSight::calcVisible(geom::Mesh &mesh) {
 	coord2d detCoords_d[3];
 	double invScaling = 1.0 / stlUnitToPix_;
 	// set lBuffer to far away
-	for (uint i = 0; i < lBuffer.getLength(); ++i) {
+	for (uint i = 0; i < lBuffer.size(); ++i) {
 		lBuffer[i] = lDefault;
 	}
 	// run for every facet
@@ -329,7 +329,7 @@ void LineOfSight::calcVisible(geom::Mesh &mesh) {
 			}
 		}
 	}
-	for (uint i = 0; i < cBuffer.getLength(); ++i) {
+	for (uint i = 0; i < cBuffer.size(); ++i) {
 		int idx = cBuffer[i];
 		if (!(idx < 0)){
 			visVec[idx] = true;

@@ -24,12 +24,6 @@ void Buffer<T>::reset(T value)
 }
 
 template<typename T>
-uint Buffer<T>::getLength() const
-{
-    return static_cast<uint>(m_data.size());
-}
-
-template<typename T>
 T Buffer<T>::getMax() const
 {
     if (m_data.empty()) return T{};
