@@ -1,11 +1,11 @@
 #pragma once
+#include "_definitions.h"
 #include "VectorMaths.h"
 #include <iostream>
+#include <vector>
+#include "glm_compat.h"
 
 using namespace vm;
-typedef unsigned int uint;
-typedef double coord2d[2];
-
 class Edge2d {
 public:
 	Edge2d() {};
@@ -23,10 +23,10 @@ public:
 	InsideTriangle() {};
 	InsideTriangle(coord2d triVerts[3]);
 	bool evaluate(int x, int y);
-	bool evaluate(vector &eVector);
-	void get_eVec(int x, int y, vector &eVector);
-	vector aVec = { 0.0 };
-	vector bVec = { 0.0 };
+	bool evaluate(vm::vector &eVector);
+	void get_eVec(int x, int y, vm::vector &eVector);
+	vm::vector aVec = { 0.0 };
+	vm::vector bVec = { 0.0 };
 	double sign = 1.0;
 	int backwards = 0;
 	coord2d A;
@@ -44,6 +44,7 @@ class BoundingBoxRasterer {
 public:
 	BoundingBoxRasterer(coord2d triVerts[3], int width, int height, coord2d roi_tl, coord2d roi_br);
 	BoundingBoxRasterer(coord2d triVerts[3], int width, int height);
+	//BoundingBoxRasterer(std::vector<vec2> triVerts, int width, int height);
 	bool iterate();
 	bool evaluate();
 	int x;
@@ -52,7 +53,7 @@ private:
 	InsideTriangle triCheck;
 	uint BUF_WIDTH;
 	uint BUF_HEIGHT;
-	vector eVec;
+	vm::vector eVec;
 	int eVec_xEvalPt;
 	int eVec_yEvalPt;
 	enum directions {ZERO_EXTENT, LEFT, RIGHT, DOWN_AFTER_LEFT, DOWN_AFTER_RIGHT};

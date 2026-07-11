@@ -1,10 +1,7 @@
 #pragma once
+#include "_definitions.h"
 #include "VectorMaths.h"   // your old vm stuff
-#include <glm/glm.hpp>
-
-using vec2 = glm::dvec2;
-using vec3 = glm::dvec3;
-using mat3 = glm::dmat3;
+#include "Rasterisation.h"
 
 // ====================== Conversion Helpers ======================
 
@@ -13,6 +10,11 @@ inline void to_vm(const vec3& g, vm::vector& out) {
     out[0] = g.x;
     out[1] = g.y;
     out[2] = g.z;
+}
+
+inline void to_vm(const vec2& g, vm::coord2d out) {
+    out[0] = g.x;
+    out[1] = g.y;
 }
 
 // GLM Matrices... column index comes first?

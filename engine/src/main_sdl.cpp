@@ -8,6 +8,7 @@
 #include "Detector.h"
 #include "RenWin.h"
 #include <SDL3/SDL_main.h>
+#include "glm_compat.h"
 
 
 const std::string test_file = (std::string)TEST_DATA_DIR + "xyzCube_ascii.stl";
@@ -71,11 +72,12 @@ int main(int argc, char* argv[]) {
 				MaterialPath d(xres, yres, 45.,
 					angle, 0.0, 0.0,
 					0.0, 0.0, -500.);
-				vm::vector coordsIn[1];
+				vec3 coordsIn[1];
 				coordsIn[0][0] = mesh.centre[0];
 				coordsIn[0][1] = mesh.centre[1];
 				coordsIn[0][2] = mesh.centre[2];
-				d.coordinateHitImage(1, coordsIn, mesh.centre);
+				vec3 meshCentre = to_glm(mesh.centre);
+				d.coordinateHitImage(1, coordsIn, meshCentre);
 				d.fixColours(0.0, 1.0, d.lBuffer);
 				renwin.writeValues(d.lBuffer);
 				renwin.update();

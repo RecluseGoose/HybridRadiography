@@ -37,7 +37,7 @@ InsideTriangle::InsideTriangle(coord2d triVerts[3]) {
 	}
 }
 
-void InsideTriangle::get_eVec(int x, int y, vector & eVector) {
+void InsideTriangle::get_eVec(int x, int y, vm::vector & eVector) {
 	for (int i = 0; i < 3; ++i) {
 		eVector[i] = edges[i].evaluate(x, y);
 	}
@@ -61,7 +61,7 @@ bool InsideTriangle::evaluate(int x, int y) {
 	return evaluate(eVec);
 }
 
-bool InsideTriangle::evaluate(vector &eVector) {
+bool InsideTriangle::evaluate(vm::vector &eVector) {
 	// CASE 2
 	if ((eVector[0] < 0) || (eVector[1] < 0) || (eVector[2] < 0)) {
 		return false;
@@ -115,6 +115,19 @@ BoundingBoxRasterer::BoundingBoxRasterer(coord2d triVerts[3], int width, int hei
 	// Create as usual
 	_bbRasterCreator(triVerts, width, height, roi_bl, roi_tr);
 }
+
+// BoundingBoxRasterer::BoundingBoxRasterer(std::vector<vec2> triVerts, int width, int height)
+// {
+// 	coord2d triVerts_vm[3];
+// 	to_vm(triVerts[0], triVerts_vm[0]);
+// 	to_vm(triVerts[1], triVerts_vm[1]);
+// 	to_vm(triVerts[2], triVerts_vm[2]);
+// 	// Set default ROI to full window
+// 	coord2d roi_bl = {0.0};
+// 	coord2d roi_tr = { (double)width - 1.0, (double)height - 1.0 };
+// 	// Create as usual
+// 	_bbRasterCreator(triVerts_vm, width, height, roi_bl, roi_tr);
+// }
 
 void BoundingBoxRasterer::_bbRasterCreator(coord2d triVerts[3], int width, int height, coord2d roi_bl, coord2d roi_tr) {
 	triCheck = InsideTriangle(triVerts);

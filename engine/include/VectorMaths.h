@@ -4,6 +4,10 @@
 namespace vm {
 	typedef double vector[3];
 	typedef double matrix[3][3];
+
+	typedef unsigned int uint;
+	typedef double coord2d[2];
+
 	void add(vector v1, vector v2, vector out);
 		// vec3 applyrotation(vec3 coord, vec3 rotationCentre, const mat3& rotmat)
 	void subtract(vector v1, vector v2, vector out);
