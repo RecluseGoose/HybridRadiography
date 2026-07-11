@@ -3,6 +3,7 @@
 #include "VectorMaths.h"
 #include "Buffer.h"
 #include "Mesh.h"
+#include "glm_compat.h"
 
 typedef unsigned int uint;
 typedef double coord2d[2];
@@ -34,7 +35,8 @@ protected:
 	double getRayFacDotProd(vm::vector source, geom::Facet &fac);
 	void projectToDet(unsigned long N, vm::vector coordsIn_w[], vm::vector S_w, coord2d detCoords_dp[]);
 	void projectToDet(geom::Facet & facet, vm::vector S_w, coord2d detCoords_dp[3]);
-	void detToWorld(vm::vector vec_in, vm::vector vec_out);
+	//void detToWorld(vm::vector vec_in, vm::vector vec_out);
+	vec3 detToWorld(vm::vector vec_in);
 	//void init(uint RESLN_X, uint RESLN_Y, double stlUnitToPix, double detDist, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ);
 	void flipBufferLR();
 	void flipBufferUD();
@@ -51,8 +53,8 @@ class MaterialPath : public DetBase {
 public:
 	using DetBase::DetBase;
 	void calcLengthBuffer(geom::Mesh &mesh);
-	void calcLengthBuffer(geom::SuperMesh &superMesh);
-	void calcLengthBuffer(geom::SuperMesh &superMesh, coord2d roi_bl, coord2d roi_tr);
+	// void calcLengthBuffer(geom::SuperMesh &superMesh);
+	// void calcLengthBuffer(geom::SuperMesh &superMesh, coord2d roi_bl, coord2d roi_tr);
 };
 
 class LineOfSight : public DetBase {

@@ -86,42 +86,43 @@ int main(int argc, char* argv[]) {
 		
 	}
 
-	if (false) {
-		std::string filenames[] = { "D:/testdata/tile.stl", "D:/testdata/cube1.stl" };
-		vm::vector offsets[] = { { 0,0,0 } ,{ -3.5,-6,-10.0 } };
-		vm::vector angles[] = { { 0.0,0.0,0.0 } ,{ .0,0.0,0.0 } };
-		vm::vector scales[] = { { 1.0, 1.0, 1.0 } ,{ 0.1, 0.1, 0.1 } };
-		double densities[] = { 1.0, -1.0 };
-		bool normFlips[] = { false, false };
-		geom::SuperMesh supermesh(2, filenames, angles, offsets, scales, densities, normFlips);
-		bool render = true;
-		RenWin renwin(xres, yres);
-		double time = 0.0;
-		int N = 50;
-		coord2d roi_bl = { 200.0, 200.0 };
-		coord2d roi_tr = { 700.0, 600.0 };
-		while (true){
-			for (int it = 0; it < N; ++it) {
+	// deal with supermesh stuff later.
+	// if (false) {
+	// 	std::string filenames[] = { "D:/testdata/tile.stl", "D:/testdata/cube1.stl" };
+	// 	vm::vector offsets[] = { { 0,0,0 } ,{ -3.5,-6,-10.0 } };
+	// 	vm::vector angles[] = { { 0.0,0.0,0.0 } ,{ .0,0.0,0.0 } };
+	// 	vm::vector scales[] = { { 1.0, 1.0, 1.0 } ,{ 0.1, 0.1, 0.1 } };
+	// 	double densities[] = { 1.0, -1.0 };
+	// 	bool normFlips[] = { false, false };
+	// 	geom::SuperMesh supermesh(2, filenames, angles, offsets, scales, densities, normFlips);
+	// 	bool render = true;
+	// 	RenWin renwin(xres, yres);
+	// 	double time = 0.0;
+	// 	int N = 50;
+	// 	coord2d roi_bl = { 200.0, 200.0 };
+	// 	coord2d roi_tr = { 700.0, 600.0 };
+	// 	while (true){
+	// 		for (int it = 0; it < N; ++it) {
 
-				auto t0 = std::chrono::high_resolution_clock::now();
-				MaterialPath d(xres, yres, 30.,
-					0.0, it, 0.0,
-					3*std::sin(it/50.0), 3*std::cos(it / 40.0), -100.
-				);
-				d.calcLengthBuffer(supermesh, roi_bl, roi_tr);
-				if (render){
-					d.fixColours(0.0, 15.0, d.lBuffer);
-					renwin.writeValues(d.lBuffer);
-					renwin.update();
-				}
-				auto t1 = std::chrono::high_resolution_clock::now();
-				time += std::chrono::duration<double>(t1 - t0).count();
-				std::cout <<it << " "<< time << std::endl;
-			}
-			std::cout << "Average tiem: " << time*1000.0/N << " ms" << std::endl;
-			break;
-		}
-	}
+	// 			auto t0 = std::chrono::high_resolution_clock::now();
+	// 			MaterialPath d(xres, yres, 30.,
+	// 				0.0, it, 0.0,
+	// 				3*std::sin(it/50.0), 3*std::cos(it / 40.0), -100.
+	// 			);
+	// 			d.calcLengthBuffer(supermesh, roi_bl, roi_tr);
+	// 			if (render){
+	// 				d.fixColours(0.0, 15.0, d.lBuffer);
+	// 				renwin.writeValues(d.lBuffer);
+	// 				renwin.update();
+	// 			}
+	// 			auto t1 = std::chrono::high_resolution_clock::now();
+	// 			time += std::chrono::duration<double>(t1 - t0).count();
+	// 			std::cout <<it << " "<< time << std::endl;
+	// 		}
+	// 		std::cout << "Average tiem: " << time*1000.0/N << " ms" << std::endl;
+	// 		break;
+	// 	}
+	// }
 
 	mesh.clear();
 	return 0;

@@ -182,11 +182,15 @@ unsigned int DetBase::coordinateHitImage(unsigned long N, vm::vector coordsIn_w[
 	return outOfViewCtr;
 }
 
-void DetBase::detToWorld(vm::vector vec_in, vm::vector vec_out) {
-	vm::vector zeros = { 0,0,0 };
-	vm::vector intermediate;
-	vm::toNewCoordSys(vec_in, zeros, rotmat_d2w, intermediate);
-	vm::add(intermediate, det_origin, vec_out);
+vec3 DetBase::detToWorld(vm::vector vec_in) {
+	mat3 rotmat_d2w_glm = to_glm(rotmat_d2w);
+	vec3 vec_in_glm = to_glm(vec_in);
+	vec3 det_origin_glm = to_glm(det_origin);
+
+	vec3 zeros = { 0,0,0 };
+	vec3 intermediate = glm_vm::toNewCoordSys(vec_in_glm, zeros, rotmat_d2w_glm);
+
+	return intermediate + det_origin_glm;
 }
 
 void DetBase::flipBufferLR() {
@@ -227,7 +231,6 @@ void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
 	vm::add(det_origin, mesh.centre, det_origin);
 	vm::subtract(det_origin, part_offset, det_origin);
 	vm::applyrotation(det_origin, mesh.centre, rotmat_d2w, det_origin);
-	vm::vector worldCoord;
 	coord2d detCoords_d[3];
 	double invScaling = 1.0 / stlUnitToPix_;
 	// run for every facet
@@ -244,9 +247,11 @@ void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
 			if (raster.evaluate()) {
 				// convert coord of pixel in det frame to pix coord in world frame
 				vm::vector detVec = { (raster.x - detPixOffsX) * invScaling,(raster.y - detPixOffsY) * invScaling, 0.0 };
-				detToWorld(detVec, worldCoord);
+				vec3 worldCoord = detToWorld(detVec);
+				vm::vector worldCoord_vm;
+				to_vm(worldCoord, worldCoord_vm);
 				// append length buffer
-				double l = lengthCalc.calcLength(fac.n, worldCoord, S);
+				double l = lengthCalc.calcLength(fac.n, worldCoord_vm, S);
 				lBuffer[raster.x + raster.y*det_xres_] -= l*facetSign;
 			}
 		}
@@ -254,55 +259,55 @@ void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
 	if (viewAlongNegativeZ && doFilpCorrection) { flipBufferUD(); }
 }
 
-void MaterialPath::calcLengthBuffer(geom::SuperMesh &superMesh) {
-	// Set default ROI to full window
-	coord2d roi_bl = { 0.0, 0.0 };
-	coord2d roi_tr = { (double)det_xres_ - 1.0, (double)det_yres_ - 1.0 };
-	calcLengthBuffer(superMesh, roi_bl, roi_tr);
-}
+// void MaterialPath::calcLengthBuffer(geom::SuperMesh &superMesh) {
+// 	// Set default ROI to full window
+// 	coord2d roi_bl = { 0.0, 0.0 };
+// 	coord2d roi_tr = { (double)det_xres_ - 1.0, (double)det_yres_ - 1.0 };
+// 	calcLengthBuffer(superMesh, roi_bl, roi_tr);
+// }
 
-void MaterialPath::calcLengthBuffer(geom::SuperMesh &superMesh, coord2d roi_bl, coord2d roi_tr){
-	// Slight modification of calcLengthBuffer (geom::Mesh) to use different density and flipNorm parameters for each mesh
-	vm::vector S = { 0.0, 0.0, 0.0 };
-	det_origin[0] = 0.0;
-	det_origin[1] = 0.0;
-	det_origin[2] = viewAlongNegativeZ ? -det_dist_ : det_dist_;
-	vm::add(S, superMesh.centre, S);
-	vm::subtract(S, part_offset, S);
-	vm::applyrotation(S, superMesh.centre, rotmat_d2w, S);
-	vm::add(det_origin, superMesh.centre, det_origin);
-	vm::subtract(det_origin, part_offset, det_origin);
-	vm::applyrotation(det_origin, superMesh.centre, rotmat_d2w, det_origin);
-	vm::vector worldCoord;
-	coord2d detCoords_d[3];
-	double invScaling = 1.0 / stlUnitToPix_;
-	// run for every facet
-	geom::ulong iFac = 0;
-	for (int iMesh = 0; iMesh < superMesh.meshCount; ++iMesh) {
-		int iFacLim = superMesh.meshEndIdx[iMesh];
-		for (iFac; iFac < iFacLim; ++iFac) {
-			geom::Facet fac = superMesh.facetList[iFac];
-			// get facet sign by dot product of facet normal with with ray vector
-			double densityAndFacetSign = superMesh.meshDensities[iMesh]*getFacetSign(S, fac, superMesh.meshFlipNorms[iMesh]);
-			projectToDet(fac, S, detCoords_d);
-			// BBraster and length calculator... required within loop
-			BoundingBoxRasterer raster(detCoords_d, det_xres_, det_yres_ , roi_bl, roi_tr);
-			LengthCalculator lengthCalc(fac, S);
-			// iterate through raster
-			while (raster.iterate()) {
-				if (raster.evaluate()) {
-					// convert coord of pixel in det frame to pix coord in world frame
-					vm::vector detVec = { (raster.x - detPixOffsX) * invScaling,(raster.y - detPixOffsY) * invScaling, 0.0 };
-					detToWorld(detVec, worldCoord);
-					// append length buffer
-					double l = lengthCalc.calcLength(fac.n, worldCoord, S);
-					lBuffer[raster.x + raster.y*det_xres_] -= l * densityAndFacetSign;
-				}
-			}
-		}
-	}
-	if (viewAlongNegativeZ && doFilpCorrection) { flipBufferUD(); }
-}
+// void MaterialPath::calcLengthBuffer(geom::SuperMesh &superMesh, coord2d roi_bl, coord2d roi_tr){
+// 	// Slight modification of calcLengthBuffer (geom::Mesh) to use different density and flipNorm parameters for each mesh
+// 	vm::vector S = { 0.0, 0.0, 0.0 };
+// 	det_origin[0] = 0.0;
+// 	det_origin[1] = 0.0;
+// 	det_origin[2] = viewAlongNegativeZ ? -det_dist_ : det_dist_;
+// 	vm::add(S, superMesh.centre, S);
+// 	vm::subtract(S, part_offset, S);
+// 	vm::applyrotation(S, superMesh.centre, rotmat_d2w, S);
+// 	vm::add(det_origin, superMesh.centre, det_origin);
+// 	vm::subtract(det_origin, part_offset, det_origin);
+// 	vm::applyrotation(det_origin, superMesh.centre, rotmat_d2w, det_origin);
+// 	vm::vector worldCoord;
+// 	coord2d detCoords_d[3];
+// 	double invScaling = 1.0 / stlUnitToPix_;
+// 	// run for every facet
+// 	geom::ulong iFac = 0;
+// 	for (int iMesh = 0; iMesh < superMesh.meshCount; ++iMesh) {
+// 		int iFacLim = superMesh.meshEndIdx[iMesh];
+// 		for (iFac; iFac < iFacLim; ++iFac) {
+// 			geom::Facet fac = superMesh.facetList[iFac];
+// 			// get facet sign by dot product of facet normal with with ray vector
+// 			double densityAndFacetSign = superMesh.meshDensities[iMesh]*getFacetSign(S, fac, superMesh.meshFlipNorms[iMesh]);
+// 			projectToDet(fac, S, detCoords_d);
+// 			// BBraster and length calculator... required within loop
+// 			BoundingBoxRasterer raster(detCoords_d, det_xres_, det_yres_ , roi_bl, roi_tr);
+// 			LengthCalculator lengthCalc(fac, S);
+// 			// iterate through raster
+// 			while (raster.iterate()) {
+// 				if (raster.evaluate()) {
+// 					// convert coord of pixel in det frame to pix coord in world frame
+// 					vm::vector detVec = { (raster.x - detPixOffsX) * invScaling,(raster.y - detPixOffsY) * invScaling, 0.0 };
+// 					detToWorld(detVec, worldCoord);
+// 					// append length buffer
+// 					double l = lengthCalc.calcLength(fac.n, worldCoord, S);
+// 					lBuffer[raster.x + raster.y*det_xres_] -= l * densityAndFacetSign;
+// 				}
+// 			}
+// 		}
+// 	}
+// 	if (viewAlongNegativeZ && doFilpCorrection) { flipBufferUD(); }
+// }
 
 LineOfSight::LineOfSight(uint xres, uint yres, double hfov, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ)
 : DetBase(xres, yres, stlUnitToPix_, det_dist_, eulerX, eulerY, eulerZ, offsetX, offsetY, offsetZ), cBuffer(xres, yres)
@@ -350,9 +355,12 @@ void LineOfSight::calcVisible(geom::Mesh &mesh) {
 				if (raster.evaluate()) {
 					// convert coord of pixel in det frame to pix coord in world frame
 					vm::vector detVec = { (raster.x - detPixOffsX) * invScaling,(raster.y - detPixOffsY) * invScaling, 0.0 };
-					detToWorld(detVec, worldCoord);
+					vec3 worldCoord = detToWorld(detVec);
+
+					vm::vector worldCoord_vm;
+					to_vm(worldCoord, worldCoord_vm);
 					// append length buffer
-					double l = lengthCalc.calcLength(fac.n, worldCoord, S);
+					double l = lengthCalc.calcLength(fac.n, worldCoord_vm, S);
 					if (lBuffer[raster.x + raster.y*det_xres_] > l*facetSign) {
 						lBuffer[raster.x + raster.y*det_xres_] = l*facetSign;
 						cBuffer[raster.x + raster.y*det_xres_] = (int)i_fac;
