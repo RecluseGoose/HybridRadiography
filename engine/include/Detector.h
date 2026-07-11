@@ -32,12 +32,10 @@ public:
 	bool viewAlongNegativeZ = true;
 protected:
 	int getFacetSign(vec3 S, geom::Facet &fac, bool flipNorms);
-	double getRayFacDotProd(vm::vector source, geom::Facet &fac);
 	double getRayFacDotProd(vec3 source, geom::Facet &fac);
 	void projectToDet(unsigned long N, vm::vector coordsIn_w[], vm::vector S_w, coord2d detCoords_dp[]);
 	void projectToDet(geom::Facet & facet, vm::vector S_w, coord2d detCoords_dp[3]);
-	//void detToWorld(vm::vector vec_in, vm::vector vec_out);
-	vec3 detToWorld(vm::vector vec_in);
+	vec3 detToWorld(vec3 vec);
 	//void init(uint RESLN_X, uint RESLN_Y, double stlUnitToPix, double detDist, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ);
 	void flipBufferLR();
 	void flipBufferUD();

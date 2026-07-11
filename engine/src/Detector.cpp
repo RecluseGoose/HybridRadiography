@@ -49,15 +49,6 @@ DetBase::DetBase(uint xres, uint yres, double stlUnitToPix, double detDist, doub
 int DetBase::getFacetSign(vec3 source, geom::Facet &fac, bool flipNorms) {
 	return (flipNorms ^ (getRayFacDotProd(source, fac) > 0)) ? -1 : +1;
 }
-
-double DetBase::getRayFacDotProd(vm::vector source, geom::Facet &fac) {
-	// delete this.
-	vector worldFacToSource;
-	vm::subtract(fac.v0, source, worldFacToSource);
-	vm::normalise(worldFacToSource,worldFacToSource);
-	return vm::dot(fac.n, worldFacToSource);
-}
-
 double DetBase::getRayFacDotProd(vec3 source, geom::Facet &fac) {
 	vec3 f_v0 = to_glm(fac.v0);
 	vec3 f_n = to_glm(fac.n);
@@ -188,12 +179,11 @@ unsigned int DetBase::coordinateHitImage(unsigned long N, vm::vector coordsIn_w[
 	return outOfViewCtr;
 }
 
-vec3 DetBase::detToWorld(vm::vector vec_in) {
+vec3 DetBase::detToWorld(vec3 vec) {
 	mat3 rotmat_d2w_glm = to_glm(rotmat_d2w);
-	vec3 vec_in_glm = to_glm(vec_in);
 
 	vec3 zeros = { 0,0,0 };
-	vec3 intermediate = glm_vm::toNewCoordSys(vec_in_glm, zeros, rotmat_d2w_glm);
+	vec3 intermediate = glm_vm::toNewCoordSys(vec, zeros, rotmat_d2w_glm);
 
 	return intermediate + det_origin;
 }
@@ -261,7 +251,7 @@ void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
 		while (raster.iterate()) {
 			if (raster.evaluate()) {
 				// convert coord of pixel in det frame to pix coord in world frame
-				vm::vector detVec = { (raster.x - detPixOffsX) * invScaling,(raster.y - detPixOffsY) * invScaling, 0.0 };
+				vec3 detVec = { (raster.x - detPixOffsX) * invScaling,(raster.y - detPixOffsY) * invScaling, 0.0 };
 				vec3 worldCoord = detToWorld(detVec);
 				vm::vector worldCoord_vm;
 				to_vm(worldCoord, worldCoord_vm);
@@ -394,7 +384,9 @@ void LineOfSight::calcVisible(geom::Mesh &mesh) {
 	for (uint i_fac = 0; i_fac < mesh.facetCount; ++i_fac) {
 		geom::Facet fac = mesh.facetList[i_fac];
 		// get facet sign by dot product of facet normal with with ray vector
-		double dp = getRayFacDotProd(S, fac);
+		
+		vec3 S_glm = to_glm(S);
+		double dp = getRayFacDotProd(S_glm, fac);
 		dpVec[i_fac] = dp;
 		int facetSign = (mesh.flipNorms ^ (dp > 0))? -1 : +1;	// +1 designates opposite-facicng 
 		if (facetSign > 0) { // face cull
@@ -406,7 +398,7 @@ void LineOfSight::calcVisible(geom::Mesh &mesh) {
 			while (raster.iterate()) {
 				if (raster.evaluate()) {
 					// convert coord of pixel in det frame to pix coord in world frame
-					vm::vector detVec = { (raster.x - detPixOffsX) * invScaling,(raster.y - detPixOffsY) * invScaling, 0.0 };
+					vec3 detVec = { (raster.x - detPixOffsX) * invScaling,(raster.y - detPixOffsY) * invScaling, 0.0 };
 					vec3 worldCoord = detToWorld(detVec);
 
 					vm::vector worldCoord_vm;
