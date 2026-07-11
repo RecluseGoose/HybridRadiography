@@ -14,9 +14,7 @@ public:
 	DetBase(uint RESLN_X, uint RESLN_Y, double hfov, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ);
 	DetBase(uint RESLN_X, uint RESLN_Y, double stlUnitToPix, double detDist, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ);
 	~DetBase();
-	void projectAllToDet_vm(unsigned long N, vm::vector coordsIn_w[], vm::vector meshCentre, vm::coord2d coordsOut_d[]);
 	void projectAllToDet(unsigned long N, const vec3* coordsIn_w, const vec3& meshCentre, vm::coord2d detCoords_dp[]);
-	unsigned int coordinateHitImage_vm(unsigned long N, vm::vector coordsIn_w[], vm::vector meshCentre);
 	unsigned int coordinateHitImage(unsigned long N, const vec3* coordsIn_w, const vec3& meshCentre);
     void fixColours(double lmin, double lmax, Buffer<double> &buffer);
     // Physical parameters
@@ -34,9 +32,7 @@ public:
 protected:
 	int getFacetSign(vec3 S, geom::Facet &fac, bool flipNorms);
 	double getRayFacDotProd(vec3 source, geom::Facet &fac);
-	void projectToDet_vm(unsigned long N, vm::vector coordsIn_w[], vec3 S_w, vm::coord2d detCoords_dp[]);
 	void projectToDet(unsigned long N, const vec3* coordsIn_w, const vec3& S_w, vm::coord2d detCoords_dp[]);
-	void projectToDet_vm(geom::Facet & facet, vec3 S_w, vm::coord2d detCoords_dp[3]);
 	void projectToDet(geom::Facet& facet, const vec3& S_w, vm::coord2d detCoords_dp[3]);
 	vec3 detToWorld(vec3 vec);
 	//void init(uint RESLN_X, uint RESLN_Y, double stlUnitToPix, double detDist, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ);

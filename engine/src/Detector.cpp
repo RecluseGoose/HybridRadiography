@@ -82,33 +82,6 @@ void DetBase::fixColours(double lmin, double lmax, Buffer<double> &buffer) {
 	}
 }
 
-// for list of coords N_coords long
-void DetBase::projectToDet_vm(unsigned long N, vm::vector coordsIn_w[], vec3 S_w, vm::coord2d detCoords_dp[]) {	
-	vec3 S_d = glm_vm::toNewCoordSys(S_w, det_origin, rotmat_w2d); // source coord in detector frame
-	vec3 ray_vec_d = glm::normalize(S_d);
-
-	double zs = glm::dot(ray_vec_d, S_d);
-	for (geom::ulong i = 0; i < N; i++) {
-		vec3 coordsIn_w_glm = to_glm(coordsIn_w[i]); 
-		vec3 coord_d = glm_vm::toNewCoordSys(coordsIn_w_glm, det_origin, rotmat_w2d);
-		double zf = glm::dot(coord_d, ray_vec_d);
-		// sign of alpha assers whether coordinates behind source
-		//double alpha = std::abs( zs / (zs - zf) );
-		double alpha = zs / (zs - zf);
-		if (alpha > 0.0){
-			detCoords_dp[i][0] = stlUnitToPix_ * (coord_d[0] - S_d[0])*alpha + detPixOffsX;	// detector coordinates in pixels
-			detCoords_dp[i][1] = stlUnitToPix_ * (coord_d[1] - S_d[1])*alpha + detPixOffsY;  // detector coordinates in pixels
-		}
-		else{
-			for (geom::ulong j = 0; j < N; j++) {
-				detCoords_dp[j][0] = -1; // is offscreen
-				detCoords_dp[j][1] = -1; // is offscreen
-			}
-			return;
-		}
-	}
-}
-
 void DetBase::projectToDet(unsigned long N, const vec3* coordsIn_w, const vec3& S_w, vm::coord2d detCoords_dp[]) {	
 	vec3 S_d = glm_vm::toNewCoordSys(S_w, det_origin, rotmat_w2d); // source coord in detector frame
 	vec3 ray_vec_d = glm::normalize(S_d);
@@ -151,18 +124,6 @@ void DetBase::projectAllToDet(unsigned long N, const vec3* coordsIn_w, const vec
     projectToDet(N, coordsIn_w, S, detCoords_dp);   // still passing old type for now
 }
 
-
-void DetBase::projectToDet_vm(geom::Facet & facet, vec3 S_w, vm::coord2d detCoords_dp[3]) {
-	vm::vector coordsIn_w[3];
-	// 3 coords (facet)
-	for (int j = 0; j < 3; ++j) {
-		coordsIn_w[0][j] = facet.v0[j];
-		coordsIn_w[1][j] = facet.v1[j];
-		coordsIn_w[2][j] = facet.v2[j];
-	}
-	projectToDet_vm(3, coordsIn_w, S_w, detCoords_dp);
-}
-
 void DetBase::projectToDet(geom::Facet& facet, const vec3& S_w, vm::coord2d detCoords_dp[3]) {
 	vec3 coordsIn_w[3];
 	// 3 coords (facet)
@@ -190,54 +151,6 @@ void DetBase::projectToDet(geom::Facet& facet, const vec3& S_w, vm::coord2d detC
 // 	vm::applyrotation(det_origin, meshCentre, rotmat_d2w, det_origin);
 // 	projectToDet(N, coordsIn_w, S, coordsOut_d);
 // }
-
-void DetBase::projectAllToDet_vm(unsigned long N, vm::vector coordsIn_w[], vm::vector meshCentre, vm::coord2d coordsOut_d[])
-{
-	vec3 S = vec3(0.0);
-    // Set detector origin
-    det_origin = vec3(0.0, 0.0, viewAlongNegativeZ ? -det_dist_ : det_dist_);
-
-    // Convert and do vector math with GLM (much cleaner)  
-	vec3 centre = to_glm(meshCentre);
-
-    S = centre - part_offset;
-    // Apply rotation (still using old function for now)
-    
-    S = glm_vm::applyrotation(S, centre, rotmat_d2w);
-	vec3 det_orig = centre - part_offset;
-	det_origin = glm_vm::applyrotation(det_orig, centre, rotmat_d2w);
-    
-    // Call the lower level function
-    projectToDet_vm(N, coordsIn_w, S, coordsOut_d);   // still passing old type for now
-}
-
-unsigned int DetBase::coordinateHitImage_vm(unsigned long N, vm::vector coordsIn_w[], vm::vector meshCentre) {
-	int xmin = 1;	//0; // TODO: we're using minimum of 1 rather than 0, to match edge glitch in rasterer...
-	int ymin = 1;	//0;
-	int xmax = det_xres_ - 1;
-	int ymax = det_yres_ - 1;
-	// project all coords 
-	vm::coord2d *coordsOut_d;
-	coordsOut_d = new vm::coord2d[N];
-	projectAllToDet_vm(N, coordsIn_w, meshCentre, coordsOut_d);
-	// loop through and append do lBuffer
-	unsigned int outOfViewCtr = 0;
-	for (unsigned long i = 0; i < N; ++i) {
-		// round to closest integer
-		int x = (int)(coordsOut_d[i][0] + 0.5);
-		int y = (int)(coordsOut_d[i][1] + 0.5);
-		// append 
-		if ((x <= xmax) && (x >= xmin) && (y <= ymax) && (y >= ymin)) {
-			++lBuffer[x + det_xres_*y];
-		}
-		else {
-			++outOfViewCtr;
-		}
-	}
-	delete[] coordsOut_d;
-	if (viewAlongNegativeZ && doFilpCorrection) { flipBufferUD(); }
-	return outOfViewCtr;
-}
 
 unsigned int DetBase::coordinateHitImage(unsigned long N, const vec3* coordsIn_w, const vec3& meshCentre) {
 	int xmin = 1;	//0; // TODO: we're using minimum of 1 rather than 0, to match edge glitch in rasterer...
@@ -330,7 +243,7 @@ void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
 		to_vm(S, S_vm);
 
 		int facetSign = getFacetSign(S, fac, mesh.flipNorms);
-		projectToDet_vm(fac, S, detCoords_d);
+		projectToDet(fac, S, detCoords_d);
 		// BBraster and length calculator... required within loop
 		BoundingBoxRasterer raster(detCoords_d, det_xres_, det_yres_);
 		LengthCalculator lengthCalc(fac, S_vm);
@@ -480,7 +393,7 @@ void LineOfSight::calcVisible(geom::Mesh &mesh) {
 			vm::vector S_vm;
 			to_vm(S, S_vm);
 
-			projectToDet_vm(fac, S, detCoords_d);
+			projectToDet(fac, S, detCoords_d);
 			// BBraster and length calculator... required within loop
 			BoundingBoxRasterer raster(detCoords_d, det_xres_, det_yres_);
 			LengthCalculator lengthCalc(fac, S_vm);
