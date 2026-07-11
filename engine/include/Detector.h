@@ -24,17 +24,17 @@ public:
 	uint det_xres_ = 1200;						// x-resolution (pixels)
 	uint det_yres_ = 1000;					// y-resolution (pixels)
 	vec3 det_origin;		// centre of coord sys
-	vm::matrix rotmat_w2d;	// rotation matrix b/w world and det
-	vm::matrix rotmat_d2w;	// rotation matrix b/w det and world
-	vm::vector part_offset;
+	mat3 rotmat_w2d;	// rotation matrix b/w world and det
+	mat3 rotmat_d2w;	// rotation matrix b/w det and world
+	vec3 part_offset;
 	Buffer<double> lBuffer;			// length buffer
 	bool doFilpCorrection = true;	// not required if (a) viewAlongNegativeZ = false or (b) not interested in the correction
 	bool viewAlongNegativeZ = true;
 protected:
 	int getFacetSign(vec3 S, geom::Facet &fac, bool flipNorms);
 	double getRayFacDotProd(vec3 source, geom::Facet &fac);
-	void projectToDet(unsigned long N, vm::vector coordsIn_w[], vm::vector S_w, coord2d detCoords_dp[]);
-	void projectToDet(geom::Facet & facet, vm::vector S_w, coord2d detCoords_dp[3]);
+	void projectToDet(unsigned long N, vm::vector coordsIn_w[], vec3 S_w, coord2d detCoords_dp[]);
+	void projectToDet(geom::Facet & facet, vec3 S_w, coord2d detCoords_dp[3]);
 	vec3 detToWorld(vec3 vec);
 	//void init(uint RESLN_X, uint RESLN_Y, double stlUnitToPix, double detDist, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ);
 	void flipBufferLR();
