@@ -1,10 +1,11 @@
+#include "glm_compat.h"
 #include "Detector.h"
 #include <iostream>
 #include <cmath>
 #include "Rasterisation.h"
 #include "LengthCalc.h"
 #include "Euler.h"
-#include "VectorMaths.h"
+#include "glm_vm.h"
 
 double DEG2RAD = 0.0174532925;
 
@@ -71,15 +72,19 @@ void DetBase::fixColours(double lmin, double lmax, Buffer<double> &buffer) {
 
 // for list of coords N_coords long
 void DetBase::projectToDet(unsigned long N, vm::vector coordsIn_w[], vm::vector S_w, coord2d detCoords_dp[]) {
-	vm::vector coord_d;
-	vm::vector S_d; // source coord in detector frame
-	vm::vector ray_vec_d;
-	vm::toNewCoordSys(S_w, det_origin, rotmat_w2d, S_d);
-	vm::normalise(S_d, ray_vec_d);	// ray_vec_d is a normalised vector perpendicular to detector, pointing directly at source
-	double zs = vm::dot(ray_vec_d, S_d);
+
+	mat3 rotmat_w2d_glm = to_glm(rotmat_w2d);
+	vec3 S_w_glm = to_glm(S_w);
+	vec3 det_origin_glm = to_glm(det_origin);
+	
+	vec3 S_d = glm_vm::toNewCoordSys(S_w_glm, det_origin_glm, rotmat_w2d_glm); // source coord in detector frame
+	vec3 ray_vec_d = glm::normalize(S_d);
+
+	double zs = glm::dot(ray_vec_d, S_d);
 	for (geom::ulong i = 0; i < N; i++) {
-		vm::toNewCoordSys(coordsIn_w[i], det_origin, rotmat_w2d, coord_d);
-		double zf = vm::dot(coord_d, ray_vec_d);
+		vec3 coordsIn_w_glm = to_glm(coordsIn_w[i]); 
+		vec3 coord_d = glm_vm::toNewCoordSys(coordsIn_w_glm, det_origin_glm, rotmat_w2d_glm);
+		double zf = glm::dot(coord_d, ray_vec_d);
 		// sign of alpha assers whether coordinates behind source
 		//double alpha = std::abs( zs / (zs - zf) );
 		double alpha = zs / (zs - zf);
@@ -108,18 +113,45 @@ void DetBase::projectToDet(geom::Facet & facet, vm::vector S_w, coord2d detCoord
 	projectToDet(3, coordsIn_w, S_w, detCoords_dp);
 }
 
-void DetBase::projectAllToDet(unsigned long N, vm::vector coordsIn_w[], vm::vector meshCentre, coord2d coordsOut_d[]) {
-	vm::vector S = { 0.0, 0.0, 0.0 };
-	det_origin[0] = 0.0;
-	det_origin[1] = 0.0;
-	det_origin[2] = viewAlongNegativeZ ? -det_dist_ : det_dist_;
-	vm::add(S, meshCentre, S);
-	vm::subtract(S, part_offset, S);
-	vm::applyrotation(S, meshCentre, rotmat_d2w, S);
-	vm::add(det_origin, meshCentre, det_origin);
-	vm::subtract(det_origin, part_offset, det_origin);
-	vm::applyrotation(det_origin, meshCentre, rotmat_d2w, det_origin);
-	projectToDet(N, coordsIn_w, S, coordsOut_d);
+// void DetBase::projectAllToDet(unsigned long N, vm::vector coordsIn_w[], vm::vector meshCentre, coord2d coordsOut_d[]) {
+// -vm::vector S = { 0.0, 0.0, 0.0 };
+// -det_origin[0] = 0.0;
+// _det_origin[1] = 0.0;
+// _det_origin[2] = viewAlongNegativeZ ? -det_dist_ : det_dist_;
+// -vm::add(S, meshCentre, S);
+// 	vm::subtract(S, part_offset, S);
+// 	vm::applyrotation(S, meshCentre, rotmat_d2w, S);
+// 	vm::add(det_origin, meshCentre, det_origin);
+// 	vm::subtract(det_origin, part_offset, det_origin);
+// 	vm::applyrotation(det_origin, meshCentre, rotmat_d2w, det_origin);
+// 	projectToDet(N, coordsIn_w, S, coordsOut_d);
+// }
+
+void DetBase::projectAllToDet(unsigned long N, vm::vector coordsIn_w[], vm::vector meshCentre, coord2d coordsOut_d[])
+{
+    vm::vector S_vm;
+
+	vec3 S = vec3(0.0);
+    // Set detector origin
+    vec3 det_origin_ = vec3(0.0, 0.0, viewAlongNegativeZ ? -det_dist_ : det_dist_);
+
+    // Convert and do vector math with GLM (much cleaner)
+    vec3 offset = to_glm(part_offset);  
+	vec3 centre = to_glm(meshCentre);
+
+    S = centre - offset;
+    // Apply rotation (still using old function for now)
+    
+    mat3 rotmat = to_glm(rotmat_d2w);
+
+    S = glm_vm::applyrotation(S, centre, rotmat);
+	vec3 det_orig = centre - offset;
+	det_orig = glm_vm::applyrotation(det_orig, centre, rotmat);
+
+	to_vm(det_orig, det_origin);   
+    
+    // Call the lower level function
+    projectToDet(N, coordsIn_w, S_vm, coordsOut_d);   // still passing old type for now
 }
 
 unsigned int DetBase::coordinateHitImage(unsigned long N, vm::vector coordsIn_w[], vm::vector meshCentre) {

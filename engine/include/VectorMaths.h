@@ -1,8 +1,11 @@
 #pragma once
+//#include "glm_compat.h"
+
 namespace vm {
 	typedef double vector[3];
 	typedef double matrix[3][3];
 	void add(vector v1, vector v2, vector out);
+		// vec3 applyrotation(vec3 coord, vec3 rotationCentre, const mat3& rotmat)
 	void subtract(vector v1, vector v2, vector out);
 	void multiply(vector v1, double a, vector out);
 	void multiply(vector v1, vector v2, vector out);

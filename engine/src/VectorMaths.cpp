@@ -59,6 +59,7 @@ namespace vm {
 		out[1] = dot(rotmat[1], diff);
 		out[2] = dot(rotmat[2], diff);
 	}
+
 	void applyrotation(vector coord, vector rotationCentre, matrix rotmat, vector out) {
 		double diff[3];
 		subtract(coord, rotationCentre, diff);
@@ -67,6 +68,12 @@ namespace vm {
 		out[2] = dot(rotmat[2], diff);
 		add(coord, rotationCentre, out);
 	}
+
+	// vec3 applyrotation(vec3 coord, vec3 rotationCentre, const mat3& rotmat)
+	// {
+    // 	return rotmat * (coord - rotationCentre) + rotationCentre;
+	// }
+
 	void setToUnity(matrix & matIn) {
 		for (int i = 0; i < 3; ++i) {
 			for (int j = 0; j < 3; ++j) {

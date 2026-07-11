@@ -21,6 +21,7 @@ set(MATPATH_SOURCES
     src/Rasterisation.cpp
     src/STLReader.cpp
     src/VectorMaths.cpp
+    src/glm_vm.cpp
 #    src/material_path.cpp
 #    src/material_path2.cpp
 #    src/py_module.cpp
