@@ -88,8 +88,7 @@ void DetBase::projectToDet(unsigned long N, const vec3* coordsIn_w, const vec3& 
 
 	double zs = glm::dot(ray_vec_d, S_d);
 	for (geom::ulong i = 0; i < N; i++) {
-		vec3 coordsIn_w_glm = coordsIn_w[i]; 
-		vec3 coord_d = glm_support::toNewCoordSys(coordsIn_w_glm, det_origin, rotmat_w2d);
+		vec3 coord_d = glm_support::toNewCoordSys(coordsIn_w[i], det_origin, rotmat_w2d);
 		double zf = glm::dot(coord_d, ray_vec_d);
 		// sign of alpha assers whether coordinates behind source
 		//double alpha = std::abs( zs / (zs - zf) );
@@ -363,70 +362,6 @@ void LineOfSight::calcVisible(geom::Mesh &mesh) {
 			visVec[idx] = true;
 		}
 	}
-	// visVec = new bool[mesh.facetCount];
-	// dpVec = new double[mesh.facetCount];		// dot product vec
-	// for (uint i = 0; i < mesh.facetCount; ++i) {
-	// 	visVec[i] = false;
-	// }
-	// vm::vector S = { 0.0, 0.0, 0.0 };
-	// vm::vector det_origin_vm;
-
-
-	// det_origin_vm[0] = 0.0;
-	// det_origin_vm[1] = 0.0;
-	// det_origin_vm[2] = viewAlongNegativeZ ? -det_dist_ : det_dist_;
-	// vm::add(S, mesh.centre, S);
-	// vm::subtract(S, part_offset, S);
-	// vm::applyrotation(S, mesh.centre, rotmat_d2w, S);
-	// vm::add(det_origin_vm, mesh.centre, det_origin_vm);
-	// vm::subtract(det_origin_vm, part_offset, det_origin_vm);
-	// vm::applyrotation(det_origin_vm, mesh.centre, rotmat_d2w, det_origin_vm);
-	// vm::vector worldCoord;
-	// vm::coord2d detCoords_d[3];
-	// double invScaling = 1.0 / stlUnitToPix_;
-	// // set lBuffer to far away
-	// for (uint i = 0; i < lBuffer.size(); ++i) {
-	// 	lBuffer[i] = lDefault;
-	// }
-	// // run for every facet
-	// for (uint i_fac = 0; i_fac < mesh.facetCount; ++i_fac) {
-	// 	geom::Facet fac = mesh.facetList[i_fac];
-	// 	// get facet sign by dot product of facet normal with with ray vector
-		
-	// 	vec3 S_glm = to_glm(S);
-	// 	double dp = getRayFacDotProd(S_glm, fac);
-	// 	dpVec[i_fac] = dp;
-	// 	int facetSign = (mesh.flipNorms ^ (dp > 0))? -1 : +1;	// +1 designates opposite-facicng 
-	// 	if (facetSign > 0) { // face cull
-	// 		projectToDet(fac, S, detCoords_d);
-	// 		// BBraster and length calculator... required within loop
-	// 		BoundingBoxRasterer raster(detCoords_d, det_xres_, det_yres_);
-	// 		LengthCalculator lengthCalc(fac, S);
-	// 		// iterate through raster
-	// 		while (raster.iterate()) {
-	// 			if (raster.evaluate()) {
-	// 				// convert coord of pixel in det frame to pix coord in world frame
-	// 				vec3 detVec = { (raster.x - detPixOffsX) * invScaling,(raster.y - detPixOffsY) * invScaling, 0.0 };
-	// 				vec3 worldCoord = detToWorld(detVec);
-
-	// 				vm::vector worldCoord_vm;
-	// 				to_vm(worldCoord, worldCoord_vm);
-	// 				// append length buffer
-	// 				double l = lengthCalc.calcLength(fac.n, worldCoord_vm, S);
-	// 				if (lBuffer[raster.x + raster.y*det_xres_] > l*facetSign) {
-	// 					lBuffer[raster.x + raster.y*det_xres_] = l*facetSign;
-	// 					cBuffer[raster.x + raster.y*det_xres_] = (int)i_fac;
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
-	// for (uint i = 0; i < cBuffer.size(); ++i) {
-	// 	int idx = cBuffer[i];
-	// 	if (!(idx < 0)){
-	// 		visVec[idx] = true;
-	// 	}
-	// }
 }
 
 LineOfSight::~LineOfSight(){
