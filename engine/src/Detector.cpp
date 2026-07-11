@@ -135,6 +135,61 @@ void DetBase::projectToDet(geom::Facet& facet, const vec3& S_w, vm::coord2d detC
 	projectToDet(3, coordsIn_w, S_w, detCoords_dp);
 }
 
+// UNDER CONSTRUCTION
+void DetBase::projectToDet(unsigned long N, const vec3* coordsIn_w, const vec3& S_w, std::vector<vec2>& detCoords_dp) {	
+	vec3 S_d = glm_support::toNewCoordSys(S_w, det_origin, rotmat_w2d); // source coord in detector frame
+	vec3 ray_vec_d = glm::normalize(S_d);
+
+	double zs = glm::dot(ray_vec_d, S_d);
+	for (geom::ulong i = 0; i < N; i++) {
+		vec3 coordsIn_w_glm = coordsIn_w[i]; 
+		vec3 coord_d = glm_support::toNewCoordSys(coordsIn_w_glm, det_origin, rotmat_w2d);
+		double zf = glm::dot(coord_d, ray_vec_d);
+		// sign of alpha assers whether coordinates behind source
+		//double alpha = std::abs( zs / (zs - zf) );
+		double alpha = zs / (zs - zf);
+		if (alpha > 0.0){
+			detCoords_dp[i][0] = stlUnitToPix_ * (coord_d[0] - S_d[0])*alpha + detPixOffsX;	// detector coordinates in pixels
+			detCoords_dp[i][1] = stlUnitToPix_ * (coord_d[1] - S_d[1])*alpha + detPixOffsY;  // detector coordinates in pixels
+		}
+		else{
+			for (geom::ulong j = 0; j < N; j++) {
+				detCoords_dp[j][0] = -1; // is offscreen
+				detCoords_dp[j][1] = -1; // is offscreen
+			}
+			return;
+		}
+	}
+}
+
+// UNDER CONSTRUCTION
+void DetBase::projectAllToDet(unsigned long N, const vec3* coordsIn_w, const vec3& meshCentre, std::vector<vec2>& detCoords_dp)
+{
+	vec3 S = vec3(0.0);
+    // Set detector origin
+    det_origin = vec3(0.0, 0.0, viewAlongNegativeZ ? -det_dist_ : det_dist_);
+
+    S = meshCentre - part_offset;   
+    S = glm_support::applyrotation(S, meshCentre, rotmat_d2w);
+	vec3 det_orig = meshCentre - part_offset;
+	det_origin = glm_support::applyrotation(det_orig, meshCentre, rotmat_d2w);
+    
+    // Call the lower level function
+    projectToDet(N, coordsIn_w, S, detCoords_dp);   // still passing old type for now
+}
+
+// UNDER CONSTRUCTION
+void DetBase::projectToDet(geom::Facet& facet, const vec3& S_w, std::vector<vec2>& detCoords_dp) {
+	vec3 coordsIn_w[3];
+	// 3 coords (facet)
+	for (int j = 0; j < 3; ++j) {
+		coordsIn_w[0][j] = facet.v0[j];
+		coordsIn_w[1][j] = facet.v1[j];
+		coordsIn_w[2][j] = facet.v2[j];
+	}
+	projectToDet(3, coordsIn_w, S_w, detCoords_dp);
+}
+
 
 
 
@@ -159,8 +214,7 @@ unsigned int DetBase::coordinateHitImage(unsigned long N, const vec3* coordsIn_w
 	int ymax = det_yres_ - 1;
 	// project all coords 
 
-	vm::coord2d *coordsOut_d;
-	coordsOut_d = new vm::coord2d[N];
+	std::vector<vec2> coordsOut_d(N);
 
 	projectAllToDet(N, coordsIn_w, meshCentre, coordsOut_d);
 	// loop through and append do lBuffer
@@ -177,8 +231,7 @@ unsigned int DetBase::coordinateHitImage(unsigned long N, const vec3* coordsIn_w
 			++outOfViewCtr;
 		}
 	}
-	
-	delete[] coordsOut_d;
+
 	if (viewAlongNegativeZ && doFilpCorrection) { flipBufferUD(); }
 	return outOfViewCtr;
 }
@@ -231,7 +284,7 @@ void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
 	det_origin = glm_support::applyrotation(det_origin, meshCentre_glm, rotmat_d2w);
 
 
-	vm::coord2d detCoords_d[3];
+	std::vector<vec2> detCoords_d(3);
 	double invScaling = 1.0 / stlUnitToPix_;
 
 	// run for every facet
@@ -241,8 +294,12 @@ void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
 		
 		int facetSign = getFacetSign(S, fac, mesh.flipNorms);
 		projectToDet(fac, S, detCoords_d);
+		
+		vm::coord2d detCoords_d_vm[3];
+		to_vm(detCoords_d, detCoords_d_vm, 3);
+
 		// BBraster and length calculator... required within loop
-		BoundingBoxRasterer raster(detCoords_d, det_xres_, det_yres_);
+		BoundingBoxRasterer raster(detCoords_d_vm, det_xres_, det_yres_);
 		LengthCalculator lengthCalc(fac, S);
 		// iterate through raster
 		while (raster.iterate()) {
@@ -367,7 +424,7 @@ void LineOfSight::calcVisible(geom::Mesh &mesh) {
 	det_origin = glm_support::applyrotation(det_origin, meshCentre, rotmat_d2w);
 
 	vm::vector worldCoord;
-	vm::coord2d detCoords_d[3];
+	std::vector<vec2> detCoords_d(3);
 	double invScaling = 1.0 / stlUnitToPix_;
 	// set lBuffer to far away
 	for (uint i = 0; i < lBuffer.size(); ++i) {
@@ -385,7 +442,11 @@ void LineOfSight::calcVisible(geom::Mesh &mesh) {
 
 			projectToDet(fac, S, detCoords_d);
 			// BBraster and length calculator... required within loop
-			BoundingBoxRasterer raster(detCoords_d, det_xres_, det_yres_);
+			
+			vm::coord2d detCoords_d_vm[3];
+			to_vm(detCoords_d, detCoords_d_vm, 3);
+
+			BoundingBoxRasterer raster(detCoords_d_vm, det_xres_, det_yres_);
 			LengthCalculator lengthCalc(fac, S);
 			// iterate through raster
 			while (raster.iterate()) {

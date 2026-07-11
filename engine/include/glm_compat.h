@@ -17,6 +17,13 @@ inline void to_vm(const vec2& g, vm::coord2d out) {
     out[1] = g.y;
 }
 
+inline void to_vm(std::vector<vec2> g, vm::coord2d* out, int N) {
+    for (int i=0; i< N; i++){
+        out[i][0] = g[i].x;
+        out[i][1] = g[i].y;
+    }
+}
+
 // GLM Matrices... column index comes first?
 inline mat3 to_glm(const vm::matrix& m) {
     return mat3(
