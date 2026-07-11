@@ -5,7 +5,7 @@
 #include "Rasterisation.h"
 #include "LengthCalc.h"
 #include "Euler.h"
-#include "glm_vm.h"
+#include "glm_support.h"
 
 double DEG2RAD = 0.0174532925;
 
@@ -83,13 +83,13 @@ void DetBase::fixColours(double lmin, double lmax, Buffer<double> &buffer) {
 }
 
 void DetBase::projectToDet(unsigned long N, const vec3* coordsIn_w, const vec3& S_w, vm::coord2d detCoords_dp[]) {	
-	vec3 S_d = glm_vm::toNewCoordSys(S_w, det_origin, rotmat_w2d); // source coord in detector frame
+	vec3 S_d = glm_support::toNewCoordSys(S_w, det_origin, rotmat_w2d); // source coord in detector frame
 	vec3 ray_vec_d = glm::normalize(S_d);
 
 	double zs = glm::dot(ray_vec_d, S_d);
 	for (geom::ulong i = 0; i < N; i++) {
 		vec3 coordsIn_w_glm = coordsIn_w[i]; 
-		vec3 coord_d = glm_vm::toNewCoordSys(coordsIn_w_glm, det_origin, rotmat_w2d);
+		vec3 coord_d = glm_support::toNewCoordSys(coordsIn_w_glm, det_origin, rotmat_w2d);
 		double zf = glm::dot(coord_d, ray_vec_d);
 		// sign of alpha assers whether coordinates behind source
 		//double alpha = std::abs( zs / (zs - zf) );
@@ -116,9 +116,9 @@ void DetBase::projectAllToDet(unsigned long N, const vec3* coordsIn_w, const vec
     det_origin = vec3(0.0, 0.0, viewAlongNegativeZ ? -det_dist_ : det_dist_);
 
     S = meshCentre - part_offset;   
-    S = glm_vm::applyrotation(S, meshCentre, rotmat_d2w);
+    S = glm_support::applyrotation(S, meshCentre, rotmat_d2w);
 	vec3 det_orig = meshCentre - part_offset;
-	det_origin = glm_vm::applyrotation(det_orig, meshCentre, rotmat_d2w);
+	det_origin = glm_support::applyrotation(det_orig, meshCentre, rotmat_d2w);
     
     // Call the lower level function
     projectToDet(N, coordsIn_w, S, detCoords_dp);   // still passing old type for now
@@ -186,7 +186,7 @@ unsigned int DetBase::coordinateHitImage(unsigned long N, const vec3* coordsIn_w
 
 vec3 DetBase::detToWorld(vec3 vec) {
 	vec3 zeros = { 0,0,0 };
-	vec3 intermediate = glm_vm::toNewCoordSys(vec, zeros, rotmat_d2w);
+	vec3 intermediate = glm_support::toNewCoordSys(vec, zeros, rotmat_d2w);
 
 	return intermediate + det_origin;
 }
@@ -226,9 +226,9 @@ void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
 
 	S = S + meshCentre_glm;
 	S = S - part_offset;
-	S = glm_vm::applyrotation(S, meshCentre_glm, rotmat_d2w);
+	S = glm_support::applyrotation(S, meshCentre_glm, rotmat_d2w);
 	det_origin = det_origin + meshCentre_glm - part_offset;
-	det_origin = glm_vm::applyrotation(det_origin, meshCentre_glm, rotmat_d2w);
+	det_origin = glm_support::applyrotation(det_origin, meshCentre_glm, rotmat_d2w);
 
 
 	vm::coord2d detCoords_d[3];
@@ -239,24 +239,19 @@ void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
 		geom::Facet fac = mesh.facetList[i_fac];
 		// get facet sign by dot product of facet normal with with ray vector
 		
-		vm::vector S_vm;
-		to_vm(S, S_vm);
-
 		int facetSign = getFacetSign(S, fac, mesh.flipNorms);
 		projectToDet(fac, S, detCoords_d);
 		// BBraster and length calculator... required within loop
 		BoundingBoxRasterer raster(detCoords_d, det_xres_, det_yres_);
-		LengthCalculator lengthCalc(fac, S_vm);
+		LengthCalculator lengthCalc(fac, S);
 		// iterate through raster
 		while (raster.iterate()) {
 			if (raster.evaluate()) {
 				// convert coord of pixel in det frame to pix coord in world frame
 				vec3 detVec = { (raster.x - detPixOffsX) * invScaling,(raster.y - detPixOffsY) * invScaling, 0.0 };
 				vec3 worldCoord = detToWorld(detVec);
-				vm::vector worldCoord_vm;
-				to_vm(worldCoord, worldCoord_vm);
 				// append length buffer
-				double l = lengthCalc.calcLength(fac.n, worldCoord_vm, S_vm);
+				double l = lengthCalc.calcLength(fac, worldCoord, S);
 				lBuffer[raster.x + raster.y*det_xres_] -= l*facetSign;
 			}
 		}
@@ -363,16 +358,13 @@ void LineOfSight::calcVisible(geom::Mesh &mesh) {
 	vec3 S = { 0.0, 0.0, 0.0 };
 	vec3 meshCentre = to_glm(mesh.centre);
 
-	vm::vector det_origin_vm;
-
-
 	det_origin = {0.0, 0.0, viewAlongNegativeZ ? -det_dist_ : det_dist_};
 
 	S = meshCentre - part_offset;
-	S = glm_vm::applyrotation(S, meshCentre, rotmat_d2w);
+	S = glm_support::applyrotation(S, meshCentre, rotmat_d2w);
 
 	det_origin = det_origin + meshCentre - part_offset;
-	det_origin = glm_vm::applyrotation(det_origin, meshCentre, rotmat_d2w);
+	det_origin = glm_support::applyrotation(det_origin, meshCentre, rotmat_d2w);
 
 	vm::vector worldCoord;
 	vm::coord2d detCoords_d[3];
@@ -390,13 +382,11 @@ void LineOfSight::calcVisible(geom::Mesh &mesh) {
 		dpVec[i_fac] = dp;
 		int facetSign = (mesh.flipNorms ^ (dp > 0))? -1 : +1;	// +1 designates opposite-facicng 
 		if (facetSign > 0) { // face cull
-			vm::vector S_vm;
-			to_vm(S, S_vm);
 
 			projectToDet(fac, S, detCoords_d);
 			// BBraster and length calculator... required within loop
 			BoundingBoxRasterer raster(detCoords_d, det_xres_, det_yres_);
-			LengthCalculator lengthCalc(fac, S_vm);
+			LengthCalculator lengthCalc(fac, S);
 			// iterate through raster
 			while (raster.iterate()) {
 				if (raster.evaluate()) {
@@ -404,10 +394,8 @@ void LineOfSight::calcVisible(geom::Mesh &mesh) {
 					vec3 detVec = { (raster.x - detPixOffsX) * invScaling,(raster.y - detPixOffsY) * invScaling, 0.0 };
 					vec3 worldCoord = detToWorld(detVec);
 
-					vm::vector worldCoord_vm;
-					to_vm(worldCoord, worldCoord_vm);
 					// append length buffer
-					double l = lengthCalc.calcLength(fac.n, worldCoord_vm, S_vm);
+					double l = lengthCalc.calcLength(fac, worldCoord, S);
 					if (lBuffer[raster.x + raster.y*det_xres_] > l*facetSign) {
 						lBuffer[raster.x + raster.y*det_xres_] = l*facetSign;
 						cBuffer[raster.x + raster.y*det_xres_] = (int)i_fac;

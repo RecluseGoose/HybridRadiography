@@ -1,8 +1,8 @@
 // glm_vm.cpp
 
-#include "glm_vm.h"
+#include "glm_support.h"
 
-namespace glm_vm
+namespace glm_support
 {
 
 vec3 applyrotation(vec3 coord, vec3 centre, const mat3& rotmat){
