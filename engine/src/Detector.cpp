@@ -46,16 +46,25 @@ DetBase::DetBase(uint xres, uint yres, double stlUnitToPix, double detDist, doub
 	part_offset[2] = offsetZ;
 }
 
-int DetBase::getFacetSign(vm::vector source, geom::Facet &fac, bool flipNorms) {
+int DetBase::getFacetSign(vec3 source, geom::Facet &fac, bool flipNorms) {
 	return (flipNorms ^ (getRayFacDotProd(source, fac) > 0)) ? -1 : +1;
 }
 
 double DetBase::getRayFacDotProd(vm::vector source, geom::Facet &fac) {
+	// delete this.
 	vector worldFacToSource;
 	vm::subtract(fac.v0, source, worldFacToSource);
 	vm::normalise(worldFacToSource,worldFacToSource);
 	return vm::dot(fac.n, worldFacToSource);
 }
+
+double DetBase::getRayFacDotProd(vec3 source, geom::Facet &fac) {
+	vec3 f_v0 = to_glm(fac.v0);
+	vec3 f_n = to_glm(fac.n);
+	vec3 worldFacToSource = f_v0 - source;
+	worldFacToSource = glm::normalize(worldFacToSource);
+	return glm::dot(f_n, worldFacToSource);
+}	
 
 void DetBase::fixColours(double lmin, double lmax, Buffer<double> &buffer) {
 	double inv_lrange = 1.0 / (lmax - lmin);
@@ -75,15 +84,14 @@ void DetBase::projectToDet(unsigned long N, vm::vector coordsIn_w[], vm::vector 
 
 	mat3 rotmat_w2d_glm = to_glm(rotmat_w2d);
 	vec3 S_w_glm = to_glm(S_w);
-	vec3 det_origin_glm = to_glm(det_origin);
 	
-	vec3 S_d = glm_vm::toNewCoordSys(S_w_glm, det_origin_glm, rotmat_w2d_glm); // source coord in detector frame
+	vec3 S_d = glm_vm::toNewCoordSys(S_w_glm, det_origin, rotmat_w2d_glm); // source coord in detector frame
 	vec3 ray_vec_d = glm::normalize(S_d);
 
 	double zs = glm::dot(ray_vec_d, S_d);
 	for (geom::ulong i = 0; i < N; i++) {
 		vec3 coordsIn_w_glm = to_glm(coordsIn_w[i]); 
-		vec3 coord_d = glm_vm::toNewCoordSys(coordsIn_w_glm, det_origin_glm, rotmat_w2d_glm);
+		vec3 coord_d = glm_vm::toNewCoordSys(coordsIn_w_glm, det_origin, rotmat_w2d_glm);
 		double zf = glm::dot(coord_d, ray_vec_d);
 		// sign of alpha assers whether coordinates behind source
 		//double alpha = std::abs( zs / (zs - zf) );
@@ -133,7 +141,7 @@ void DetBase::projectAllToDet(unsigned long N, vm::vector coordsIn_w[], vm::vect
 
 	vec3 S = vec3(0.0);
     // Set detector origin
-    vec3 det_origin_ = vec3(0.0, 0.0, viewAlongNegativeZ ? -det_dist_ : det_dist_);
+    det_origin = vec3(0.0, 0.0, viewAlongNegativeZ ? -det_dist_ : det_dist_);
 
     // Convert and do vector math with GLM (much cleaner)
     vec3 offset = to_glm(part_offset);  
@@ -146,9 +154,7 @@ void DetBase::projectAllToDet(unsigned long N, vm::vector coordsIn_w[], vm::vect
 
     S = glm_vm::applyrotation(S, centre, rotmat);
 	vec3 det_orig = centre - offset;
-	det_orig = glm_vm::applyrotation(det_orig, centre, rotmat);
-
-	to_vm(det_orig, det_origin);   
+	det_origin = glm_vm::applyrotation(det_orig, centre, rotmat);
     
     // Call the lower level function
     projectToDet(N, coordsIn_w, S_vm, coordsOut_d);   // still passing old type for now
@@ -185,12 +191,11 @@ unsigned int DetBase::coordinateHitImage(unsigned long N, vm::vector coordsIn_w[
 vec3 DetBase::detToWorld(vm::vector vec_in) {
 	mat3 rotmat_d2w_glm = to_glm(rotmat_d2w);
 	vec3 vec_in_glm = to_glm(vec_in);
-	vec3 det_origin_glm = to_glm(det_origin);
 
 	vec3 zeros = { 0,0,0 };
 	vec3 intermediate = glm_vm::toNewCoordSys(vec_in_glm, zeros, rotmat_d2w_glm);
 
-	return intermediate + det_origin_glm;
+	return intermediate + det_origin;
 }
 
 void DetBase::flipBufferLR() {
@@ -221,27 +226,37 @@ void DetBase::flipBufferUD() {
 }
 
 void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
-	vm::vector S = { 0.0, 0.0, 0.0 };
-	det_origin[0] = 0.0;
-	det_origin[1] = 0.0;
-	det_origin[2] = viewAlongNegativeZ ? -det_dist_ : det_dist_;
-	vm::add(S, mesh.centre, S);
-	vm::subtract(S, part_offset, S);
-	vm::applyrotation(S, mesh.centre, rotmat_d2w, S);
-	vm::add(det_origin, mesh.centre, det_origin);
-	vm::subtract(det_origin, part_offset, det_origin);
-	vm::applyrotation(det_origin, mesh.centre, rotmat_d2w, det_origin);
+	vec3 S = { 0.0, 0.0, 0.0 };
+	det_origin = vec3(0.0, 0.0, viewAlongNegativeZ ? -det_dist_ : det_dist_);
+	
+	vec3 meshCentre_glm = to_glm(mesh.centre);
+	vec3 part_offset_glm = to_glm(part_offset);
+	mat3 rotmat_d2w_glm = to_glm(rotmat_d2w);
+
+
+	S = S + meshCentre_glm;
+	S = S - part_offset_glm;
+	S = glm_vm::applyrotation(S, meshCentre_glm, rotmat_d2w_glm);
+	det_origin = det_origin + meshCentre_glm - part_offset_glm;
+	det_origin = glm_vm::applyrotation(det_origin, meshCentre_glm, rotmat_d2w_glm);
+
+
 	coord2d detCoords_d[3];
 	double invScaling = 1.0 / stlUnitToPix_;
+
 	// run for every facet
 	for (geom::ulong i_fac = 0; i_fac < mesh.facetCount; ++i_fac) {
 		geom::Facet fac = mesh.facetList[i_fac];
 		// get facet sign by dot product of facet normal with with ray vector
+		
+		vm::vector S_vm;
+		to_vm(S, S_vm);
+
 		int facetSign = getFacetSign(S, fac, mesh.flipNorms);
-		projectToDet(fac, S, detCoords_d);
+		projectToDet(fac, S_vm, detCoords_d);
 		// BBraster and length calculator... required within loop
 		BoundingBoxRasterer raster(detCoords_d, det_xres_, det_yres_);
-		LengthCalculator lengthCalc(fac, S);
+		LengthCalculator lengthCalc(fac, S_vm);
 		// iterate through raster
 		while (raster.iterate()) {
 			if (raster.evaluate()) {
@@ -251,11 +266,45 @@ void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
 				vm::vector worldCoord_vm;
 				to_vm(worldCoord, worldCoord_vm);
 				// append length buffer
-				double l = lengthCalc.calcLength(fac.n, worldCoord_vm, S);
+				double l = lengthCalc.calcLength(fac.n, worldCoord_vm, S_vm);
 				lBuffer[raster.x + raster.y*det_xres_] -= l*facetSign;
 			}
 		}
 	}
+
+	// vm::vector S = { 0.0, 0.0, 0.0 };
+	// det_origin = vec3(0.0, 0.0, viewAlongNegativeZ ? -det_dist_ : det_dist_);
+	// vm::add(S, mesh.centre, S);
+	// vm::subtract(S, part_offset, S);
+//	// vm::applyrotation(S, mesh.centre, rotmat_d2w, S);
+//	// vm::add(det_origin, mesh.centre, det_origin);
+//	// vm::subtract(det_origin, part_offset, det_origin);
+	// vm::applyrotation(det_origin, mesh.centre, rotmat_d2w, det_origin);
+	// coord2d detCoords_d[3];
+	// double invScaling = 1.0 / stlUnitToPix_;
+	// // run for every facet
+	// for (geom::ulong i_fac = 0; i_fac < mesh.facetCount; ++i_fac) {
+	// 	geom::Facet fac = mesh.facetList[i_fac];
+	// 	// get facet sign by dot product of facet normal with with ray vector
+	// 	int facetSign = getFacetSign(S, fac, mesh.flipNorms);
+	// 	projectToDet(fac, S, detCoords_d);
+	// 	// BBraster and length calculator... required within loop
+	// 	BoundingBoxRasterer raster(detCoords_d, det_xres_, det_yres_);
+	// 	LengthCalculator lengthCalc(fac, S);
+	// 	// iterate through raster
+	// 	while (raster.iterate()) {
+	// 		if (raster.evaluate()) {
+	// 			// convert coord of pixel in det frame to pix coord in world frame
+	// 			vm::vector detVec = { (raster.x - detPixOffsX) * invScaling,(raster.y - detPixOffsY) * invScaling, 0.0 };
+	// 			vec3 worldCoord = detToWorld(detVec);
+	// 			vm::vector worldCoord_vm;
+	// 			to_vm(worldCoord, worldCoord_vm);
+	// 			// append length buffer
+	// 			double l = lengthCalc.calcLength(fac.n, worldCoord_vm, S);
+	// 			lBuffer[raster.x + raster.y*det_xres_] -= l*facetSign;
+	// 		}
+	// 	}
+	// }
 	if (viewAlongNegativeZ && doFilpCorrection) { flipBufferUD(); }
 }
 
@@ -322,15 +371,18 @@ void LineOfSight::calcVisible(geom::Mesh &mesh) {
 		visVec[i] = false;
 	}
 	vm::vector S = { 0.0, 0.0, 0.0 };
-	det_origin[0] = 0.0;
-	det_origin[1] = 0.0;
-	det_origin[2] = viewAlongNegativeZ ? -det_dist_ : det_dist_;
+	vm::vector det_origin_vm;
+
+
+	det_origin_vm[0] = 0.0;
+	det_origin_vm[1] = 0.0;
+	det_origin_vm[2] = viewAlongNegativeZ ? -det_dist_ : det_dist_;
 	vm::add(S, mesh.centre, S);
 	vm::subtract(S, part_offset, S);
 	vm::applyrotation(S, mesh.centre, rotmat_d2w, S);
-	vm::add(det_origin, mesh.centre, det_origin);
-	vm::subtract(det_origin, part_offset, det_origin);
-	vm::applyrotation(det_origin, mesh.centre, rotmat_d2w, det_origin);
+	vm::add(det_origin_vm, mesh.centre, det_origin_vm);
+	vm::subtract(det_origin_vm, part_offset, det_origin_vm);
+	vm::applyrotation(det_origin_vm, mesh.centre, rotmat_d2w, det_origin_vm);
 	vm::vector worldCoord;
 	coord2d detCoords_d[3];
 	double invScaling = 1.0 / stlUnitToPix_;

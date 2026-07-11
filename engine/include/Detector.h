@@ -23,7 +23,7 @@ public:
 	double stlUnitToPix_ = 100.0;		// units of [pixel]/[stl unit] ... bigger is more zoom
 	uint det_xres_ = 1200;						// x-resolution (pixels)
 	uint det_yres_ = 1000;					// y-resolution (pixels)
-	vm::vector det_origin;		// centre of coord sys
+	vec3 det_origin;		// centre of coord sys
 	vm::matrix rotmat_w2d;	// rotation matrix b/w world and det
 	vm::matrix rotmat_d2w;	// rotation matrix b/w det and world
 	vm::vector part_offset;
@@ -31,8 +31,9 @@ public:
 	bool doFilpCorrection = true;	// not required if (a) viewAlongNegativeZ = false or (b) not interested in the correction
 	bool viewAlongNegativeZ = true;
 protected:
-	int getFacetSign(vm::vector S, geom::Facet &fac, bool flipNorms);
+	int getFacetSign(vec3 S, geom::Facet &fac, bool flipNorms);
 	double getRayFacDotProd(vm::vector source, geom::Facet &fac);
+	double getRayFacDotProd(vec3 source, geom::Facet &fac);
 	void projectToDet(unsigned long N, vm::vector coordsIn_w[], vm::vector S_w, coord2d detCoords_dp[]);
 	void projectToDet(geom::Facet & facet, vm::vector S_w, coord2d detCoords_dp[3]);
 	//void detToWorld(vm::vector vec_in, vm::vector vec_out);
