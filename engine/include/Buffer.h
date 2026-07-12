@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <iostream>
 
 using uint  = unsigned int;
 using uchar = unsigned char;
@@ -16,6 +17,8 @@ public:
     T getMax() const;
     T getMin() const;
 
+    int hash();
+
     // 1D access using square brackets (your preference)
     T& operator[](uint i) { return m_data[i]; }
     const T& operator[](uint i) const { return m_data[i]; }
@@ -29,7 +32,7 @@ public:
 
     uint width()  const { return m_width; }
     uint height() const { return m_height; }
-    uint size()   const { return static_cast<uint>(m_data.size()); }
+    uint size()   const { return static_cast<uint>(m_data.size());}
 
 private:
     std::vector<T> m_data;

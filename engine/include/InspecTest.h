@@ -1,4 +1,5 @@
 #pragma once
+#include "Buffer.h"
 
 namespace tests{
 	bool almost_equal(double a, double b, double epsilon = 1e-6);
@@ -9,4 +10,9 @@ namespace tests{
 	bool test_SDL();
 	bool test_Buffer();
 	bool test_RenWin();
+	bool test_MatPath();
+	bool test_LineOfSight();
+
+	template<typename T>
+	int buffer_hash(const Buffer<T>& buffer);
 }
