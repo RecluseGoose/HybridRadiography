@@ -15,7 +15,6 @@ const std::string test_file = (std::string)TEST_DATA_DIR + "xyzCube_ascii.stl";
 using namespace std;
 
 int main(int argc, char* argv[]) {
-#ifdef INCLUDE_SDL
 	SDL_SetMainReady();
 	// Run tests
 	tests::InspecTest();
@@ -39,8 +38,29 @@ int main(int argc, char* argv[]) {
 
 	t1 = std::chrono::high_resolution_clock::now();
 	std::cout << "Projected " << mesh.facetCount << " facets, averaged over " << N << " shots in average time of " << std::chrono::duration<double>(t1 - t0).count()*1e3 / N << " ms" << std::endl;
-	// Render
-	if (true) {
+
+	RenWin renwin(xres, yres);
+
+	int i_iter = 0;
+	while (renwin.waitForUserQuit() && i_iter < 100) {
+		for (double angle = 0.0; angle < 360.0; angle += 5.0) {
+			MaterialPath d(xres, yres, 45.,
+				angle, angle, 0.0,
+				0.0, 0.0, -300.);
+			d.calcLengthBuffer(mesh);
+			d.fixColours(0.0, 30.0, d.lBuffer);
+			renwin.writeValues(d.lBuffer);
+			renwin.update();
+			++i_iter;
+		}
+	}
+
+	mesh.clear();
+	return 0;
+}
+
+
+/*	if (true) {
 		if (1) {
 			RenWin renwin(xres, yres);
 
@@ -58,6 +78,7 @@ int main(int argc, char* argv[]) {
 					for (uint i = 0; i < d.lBuffer.size(); ++i) {
 						sum += d.lBuffer[i];
 					}
+					std::cout << "hash val: " << d.lBuffer.hash() << std::endl;
 					++i_iter;
 					//std::cout << "the buffer sum is " << sum << std::endl;
 				}
@@ -122,10 +143,4 @@ int main(int argc, char* argv[]) {
 			break;
 		}
 	}
-
-	mesh.clear();
-	return 0;
-#else
-	return 0;
-#endif
-}
+*/

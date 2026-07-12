@@ -11,6 +11,7 @@
 #include "RenWin.h"
 #include <SDL.h>
 #endif
+#include <Detector.h>
 
 namespace tests {
 	// TEST_DATA_DIR from cmake compile definitions
@@ -31,7 +32,8 @@ namespace tests {
 		if(!test_MeshAndSTLReader()) fail_count++;
 		if(!test_Buffer()) fail_count++;
 		if(!test_SDL()) fail_count++;
-		if(!test_RenWin()) fail_count++;            
+		if(!test_RenWin()) fail_count++;
+		if(!test_MatPath()) fail_count++;
 
 		if (fail_count > 0){
 			std::cout << std::to_string(fail_count) + " tests failed\n";
@@ -191,7 +193,7 @@ namespace tests {
 		return failures == 0;
 	}
 
-	bool test_RenWin() {
+	bool test_RenWin(){
 
 		#ifdef INCLUDE_SDL
 		RenWin renWin(120, 120);
@@ -203,4 +205,41 @@ namespace tests {
 		
 		return true;
 	}
+
+	bool test_MatPath(){
+		int failures = 0;
+
+		geom::Mesh mesh(bin_file);
+		mesh.flipNorms = false;
+
+		// Calc lengths
+		int xres = 700;
+		int yres = 800;
+	
+		int h;
+
+		MaterialPath mp1(xres, yres, 5., 10.0, 15.0, -3.0, 2.0, 1.0, -332.);
+		mp1.calcLengthBuffer(mesh);
+		h = mp1.lBuffer.hash();
+	
+		if (h != -912201488) {
+			std::cout << "Failed hash 1 with value " << h << std::endl;
+			failures ++;
+		}
+
+		MaterialPath mp2(xres, yres, 5., 16.0, 5.0, 4.0, 0.0, 10.0, -302.);
+		mp2.calcLengthBuffer(mesh);
+		h = mp2.lBuffer.hash();
+
+		if (h != 486973683) {
+			std::cout << "Failed hash 2 with value " << h << std::endl;
+			failures ++;
+		}
+
+		mesh.clear();
+
+		if (failures) std::cout << "MatPath FAILED (" + std::to_string(failures) + " issues)\n";
+		return failures == 0;
+	}
+
 }

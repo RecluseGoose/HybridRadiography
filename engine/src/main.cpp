@@ -22,15 +22,16 @@ int main(int argc, char* argv[]) {
 	auto t1 = std::chrono::high_resolution_clock::now();
 	std::cout << "File load time: " << std::chrono::duration<double>(t1 - t0).count() << std::endl;
 	// Calc lengths
-	int xres = 1200;
-	int yres = 1000;
+	int xres = 400;
+	int yres = 471;	
 	
 	t0 = std::chrono::high_resolution_clock::now();
 	int N = 50;
 	for (int i = 0; i < N; ++i) {
-		MaterialPath d(xres, yres, 30., 0.0, 90.0, 0.0, 0.0, 0.0, 300.);
+		MaterialPath d(xres, yres, 30., 0.0, 90.0, 0.0, 0.0, 0.0, -300.);		
 		d.calcLengthBuffer(mesh);
 	}
+
 	t1 = std::chrono::high_resolution_clock::now();
 	std::cout << "Projected " << mesh.facetCount << " facets, averaged over " << N << " shots in average time of " << std::chrono::duration<double>(t1 - t0).count()*1e3 / N << " ms" << std::endl;
 

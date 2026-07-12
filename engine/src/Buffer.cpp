@@ -37,6 +37,20 @@ T Buffer<T>::getMin() const
     return *std::min_element(m_data.begin(), m_data.end());
 }
 
+template <typename T>
+int Buffer<T>::hash()
+{
+    int h = 0;
+    int i_max = size();
+
+    for (int i=0; i<i_max; ++i){
+        float f = (i + 21476000)*m_data[i];
+        h += (int) f;
+    }
+
+    return h;
+}
+
 // Explicit template instantiations
 template class Buffer<float>;
 template class Buffer<double>;
