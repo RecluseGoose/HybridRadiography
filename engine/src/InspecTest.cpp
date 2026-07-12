@@ -34,6 +34,7 @@ namespace tests {
 		if(!test_SDL()) fail_count++;
 		if(!test_RenWin()) fail_count++;
 		if(!test_MatPath()) fail_count++;
+		if(!test_LineOfSight()) fail_count++;
 
 		if (fail_count > 0){
 			std::cout << std::to_string(fail_count) + " tests failed\n";
@@ -223,7 +224,7 @@ namespace tests {
 		h = mp1.lBuffer.hash();
 	
 		if (h != -912201488) {
-			std::cout << "Failed hash 1 with value " << h << std::endl;
+			std::cout << "Failed MatPath hash 1 with value " << h << std::endl;
 			failures ++;
 		}
 
@@ -232,13 +233,51 @@ namespace tests {
 		h = mp2.lBuffer.hash();
 
 		if (h != 486973683) {
-			std::cout << "Failed hash 2 with value " << h << std::endl;
+			std::cout << "Failed MatPath hash 2 with value " << h << std::endl;
 			failures ++;
 		}
 
 		mesh.clear();
 
 		if (failures) std::cout << "MatPath FAILED (" + std::to_string(failures) + " issues)\n";
+		return failures == 0;
+	}
+
+	bool test_LineOfSight(){
+		int failures = 0;
+
+		geom::Mesh mesh(bin_file);
+		mesh.flipNorms = false;
+
+		// Calc lengths
+		int xres = 700;
+		int yres = 800;
+	
+		int h;
+
+		LineOfSight los1(xres, yres, 5., 10.0, 15.0, -3.0, 2.0, 1.0, -332.);
+		los1.calcVisible(mesh);
+		h = los1.cBuffer.getMin();
+	
+		if (h != 0) {
+			std::cout << "Failed LineOfSight hash 1 with value " << h << std::endl;
+			failures ++;
+		}
+
+		LineOfSight los2(xres, yres, 5., 16.0, 5.0, 4.0, 0.0, 10.0, -302.);
+		los2.calcVisible(mesh);
+		h = los2.lBuffer.getMin();
+
+		if (h != -2147483648) {
+			std::cout << "Failed LineOfSight hash 2 with value " << h << std::endl;
+			failures ++;
+		}
+
+		mesh.clear();
+
+		std::cout << "Warning: LineOfSight dummy tests\n";
+
+		if (failures) std::cout << "LineOfSight FAILED (" + std::to_string(failures) + " issues)\n";
 		return failures == 0;
 	}
 

@@ -11,6 +11,7 @@ namespace tests{
 	bool test_Buffer();
 	bool test_RenWin();
 	bool test_MatPath();
+	bool test_LineOfSight();
 
 	template<typename T>
 	int buffer_hash(const Buffer<T>& buffer);

@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
 	t0 = std::chrono::high_resolution_clock::now();
 	int N = 50;
 	for (int i = 0; i < N; ++i) {
-		MaterialPath d(xres, yres, 30., 0.0, 90.0, 0.0, 0.0, 0.0, -300.);		
+		MaterialPath d(xres, yres, 30., 0.0, 90.0, 0.0, 0.0, 0.0, -300.);
 		d.calcLengthBuffer(mesh);
 	}
 
