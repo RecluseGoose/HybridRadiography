@@ -29,6 +29,7 @@ public:
 	Mesh();
 	//Mesh(const char * stlfile);
 	Mesh(const std::string stlfile);
+	Mesh(const std::string stlfile, bool flipNorms);
 	void readin(const char * stlfile);
 	void readin(const std::string stlfile);
 	~Mesh();

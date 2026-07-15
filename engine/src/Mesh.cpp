@@ -52,6 +52,12 @@ Mesh::Mesh(){
 Mesh::Mesh(const std::string stlfile){
 	this->readin(stlfile);
 }
+
+Mesh::Mesh(const std::string stlfile, bool flipNorms)
+: flipNorms(flipNorms){
+	this->readin(stlfile);
+}
+
 //void Mesh::readin(const char * stlfile){
 	// STLReader reader;
 	// reader.readFile(stlfile, *this);
