@@ -49,11 +49,11 @@ Mesh::Mesh(){
 //Mesh::Mesh(const char * stlfile){
 //	this->readin(stlfile);
 //}
-Mesh::Mesh(const std::string stlfile){
+Mesh::Mesh(const std::string& stlfile){
 	this->readin(stlfile);
 }
 
-Mesh::Mesh(const std::string stlfile, bool flipNorms)
+Mesh::Mesh(const std::string& stlfile, bool flipNorms)
 : flipNorms(flipNorms){
 	this->readin(stlfile);
 }

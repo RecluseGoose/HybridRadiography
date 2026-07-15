@@ -50,7 +50,7 @@ protected:
 class MaterialPath : public DetBase {
 public:
 	using DetBase::DetBase;
-	void calcLengthBuffer(geom::Mesh &mesh);
+	void calcLengthBuffer(const geom::Mesh &mesh);
 	// void calcLengthBuffer(geom::SuperMesh &superMesh);
 	// void calcLengthBuffer(geom::SuperMesh &superMesh, coord2d roi_bl, coord2d roi_tr);
 };

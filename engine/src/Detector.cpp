@@ -196,7 +196,7 @@ void DetBase::flipBufferUD() {
 	for (uint i = 0; i < lBuffer_flipped.size(); ++i) { lBuffer[i] = lBuffer_flipped[i]; }
 }
 
-void MaterialPath::calcLengthBuffer(geom::Mesh &mesh) {
+void MaterialPath::calcLengthBuffer(const geom::Mesh &mesh) {
 	vec3 S = { 0.0, 0.0, 0.0 };
 	det_origin = vec3(0.0, 0.0, viewAlongNegativeZ ? -det_dist_ : det_dist_);
 	
