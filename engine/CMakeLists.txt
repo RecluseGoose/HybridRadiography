@@ -24,9 +24,6 @@ set(MATPATH_SOURCES
     src/STLReader.cpp
     src/VectorMaths.cpp
     src/glm_support.cpp
-#    src/material_path.cpp
-#    src/material_path2.cpp
-#    src/py_module.cpp
 )
 
 add_library(matpathlib STATIC ${MATPATH_SOURCES})
@@ -105,7 +102,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(pybind11)
 
 # pybind11 method:
-pybind11_add_module(py_matpath python/py_module.cpp)
+pybind11_add_module(py_matpath python/matpath_module.cpp)
+pybind11_add_module(py_rays python/rays_module.cpp)
 
 if(USE_OPENMP)
     find_package(OpenMP)
@@ -119,6 +117,10 @@ if(USE_OPENMP)
 endif()
 
 target_link_libraries(py_matpath PRIVATE
+    matpathlib
+)
+
+target_link_libraries(py_rays PRIVATE
     matpathlib
 )
 

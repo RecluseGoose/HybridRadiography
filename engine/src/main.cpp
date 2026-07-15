@@ -29,6 +29,13 @@ int main(int argc, char* argv[]) {
 	int N = 50;
 	for (int i = 0; i < N; ++i) {
 		MaterialPath d(xres, yres, 30., 0.0, 90.0, 0.0, 0.0, 0.0, -300.);
+		std::vector<vec3> coords_w(1);
+		coords_w[0] = {0,0,0};
+		vec3 centre_glm = {mesh.centre[0],mesh.centre[1],mesh.centre[2]};
+		std::vector<vec2> detCoords_dp(1);
+
+//		d.projectAllToDet(1, coords_w.data(), centre_glm, detCoords_dp);	
+//		std::cout << detCoords_dp[0][0] << ", " << detCoords_dp[0][1] << std::endl;
 		d.calcLengthBuffer(mesh);
 	}
 
