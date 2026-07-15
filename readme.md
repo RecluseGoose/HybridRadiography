@@ -27,11 +27,3 @@ To select in jupyter, search the "Kernel" dropbown menu -> "Change Kernel" -> "A
 
 if you get the error message  "Module use of python36.dll conflicts with this version of Python.", this will (hopefully) be why.
 
-
-## License
-
-To be determined
-
-## Contributing Authors
-
-Robert Culver
