@@ -3,6 +3,7 @@ project(matpath LANGUAGES CXX)
 include(FetchContent)
 
 option(BUILD_MATPATH_SDL "Add the SDL executable to the build?" ON)
+option(BUILD_PYTHON_MODULE "Add the Python dll to the build?" ON)
 
 ## =================== CONFIGURE COMMON DEPENDENCIES ===================
 # Output directories
@@ -52,7 +53,7 @@ target_link_libraries(matpath PRIVATE
 )
 
 ## =================== CONFIGURE matpath_sdl ===================
-if (BUILD_MATPATH_SDL)
+if (BUILD_MATPATH_SDL) 
 
 # Deal with SDL3
 FetchContent_Declare(
@@ -76,6 +77,26 @@ target_compile_definitions(matpath_sdl PRIVATE
 )
 endif()
 
+## =================== CONFIGURE my_python_module ===================
+if (BUILD_PYTHON_MODULE) 
+find_package(Python REQUIRED COMPONENTS Interpreter Development.Module) # this is ugly af. Python dir passed in .vscode/settings.json
+
+FetchContent_Declare(
+    pybind11
+    GIT_REPOSITORY https://github.com/pybind/pybind11
+    GIT_TAG        v3.0
+)
+
+FetchContent_MakeAvailable(pybind11)
+
+# pybind11 method:
+pybind11_add_module(my_python_module python/python_hello_world.cpp)
+
+target_link_libraries(my_python_module PRIVATE
+    matpathlib
+)
+endif()
+
 ## =================== DREGS ===================
 
 # Optional: Enable multi-threading if needed
@@ -84,3 +105,4 @@ endif()
 
 get_property(allTargets DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
 message(STATUS "Targets: ${allTargets}")
+
