@@ -79,6 +79,14 @@ endif()
 if(BUILD_PYTHON_MODULE)
 #set(PYBIND11_FINDPYTHON OLD)
 
+function(set_python_output target)
+    set_target_properties(${target} PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    )
+endfunction()
+
 if(DEFINED ENV{MATPATH_TARGET_PYTHON_ENV})
     set(Python_ROOT_DIR
         "$ENV{MATPATH_TARGET_PYTHON_ENV}"
@@ -103,7 +111,10 @@ FetchContent_MakeAvailable(pybind11)
 
 # pybind11 method:
 pybind11_add_module(py_matpath python/matpath_module.cpp)
+set_python_output(py_matpath)
+
 pybind11_add_module(py_rays python/rays_module.cpp)
+set_python_output(py_rays)
 
 if(USE_OPENMP)
     find_package(OpenMP)
@@ -124,13 +135,19 @@ target_link_libraries(py_rays PRIVATE
     matpathlib
 )
 
+# Copy over python modules
+function(copy_python_module target dest)
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${dest}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:${target}>
+            "${dest}"
+    )
+endfunction()
+copy_python_module(py_matpath "${CMAKE_SOURCE_DIR}/../cpp2p")
+copy_python_module(py_rays "${CMAKE_SOURCE_DIR}/../cpp2p")
+
 endif()
-
-## =================== DREGS ===================
-
-# Optional: Enable multi-threading if needed
-#find_package(Threads REQUIRED)
-#target_link_libraries(matpath PRIVATE Threads::Threads)
 
 get_property(allTargets DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
 message(STATUS "Targets: ${allTargets}\n")
