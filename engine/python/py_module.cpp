@@ -63,6 +63,7 @@ py::array_t<double> calculate_multi(const geom::Mesh& mesh, const SetupContainer
     double* buffer_ptr = static_cast<double*>(info.ptr);
     py::ssize_t shot_stride = setup.xres*setup.yres;
 
+    py::gil_scoped_release release; // stop python hogging the gil? Apparently will help with omp.
     #pragma omp parallel for
     for (py::ssize_t iShot = 0; iShot< nShots; ++iShot){
         double* shot_ptr = buffer_ptr + iShot * shot_stride;

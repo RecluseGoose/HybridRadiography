@@ -4,6 +4,7 @@ include(FetchContent)
 
 option(BUILD_MATPATH_SDL "Add the SDL executable to the build?" ON)
 option(BUILD_PYTHON_MODULE "Add the Python dll to the build?" ON)
+option(USE_OPENMP "Enable OpenMP acceleration" ON) ## Only used in python module build
 
 ## =================== CONFIGURE COMMON DEPENDENCIES ===================
 # Output directories
@@ -79,7 +80,7 @@ endif()
 
 ## =================== CONFIGURE py_matpath ===================
 if(BUILD_PYTHON_MODULE)
-set(PYBIND11_FINDPYTHON OLD)
+#set(PYBIND11_FINDPYTHON OLD)
 
 if(DEFINED ENV{MATPATH_TARGET_PYTHON_ENV})
     set(Python_ROOT_DIR
@@ -106,9 +107,21 @@ FetchContent_MakeAvailable(pybind11)
 # pybind11 method:
 pybind11_add_module(py_matpath python/py_module.cpp)
 
+if(USE_OPENMP)
+    find_package(OpenMP)
+    if(OpenMP_CXX_FOUND)
+        message(STATUS "OpenMP enabled")
+        target_link_libraries(py_matpath PRIVATE OpenMP::OpenMP_CXX)
+        target_compile_definitions(py_matpath PRIVATE USE_OPENMP)
+    else()
+        message(WARNING "OpenMP not found. Building single-threaded.")
+    endif()
+endif()
+
 target_link_libraries(py_matpath PRIVATE
     matpathlib
 )
+
 endif()
 
 ## =================== DREGS ===================
