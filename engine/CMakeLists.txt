@@ -78,8 +78,16 @@ target_compile_definitions(matpath_sdl PRIVATE
 endif()
 
 ## =================== CONFIGURE my_python_module ===================
-if (BUILD_PYTHON_MODULE) 
-find_package(Python REQUIRED COMPONENTS Interpreter Development.Module) # this is ugly af. Python dir passed in .vscode/settings.json
+if(BUILD_PYTHON_MODULE)
+set(PYBIND11_FINDPYTHON NEW)
+if(DEFINED ENV{MATPATH_TARGET_PYTHON_ENV})
+    find_package(Python REQUIRED COMPONENTS Interpreter Development.Module) # this is ugly af. Python dir passed in .vscode/settings.json
+else()
+    message(WARNING
+        "Attemping to find a default python directory.\n"
+        "Please define MATPATH_TARGET_PYTHON_ENV in environment variables\n"
+    )
+endif()
 
 FetchContent_Declare(
     pybind11
@@ -104,5 +112,5 @@ endif()
 #target_link_libraries(matpath PRIVATE Threads::Threads)
 
 get_property(allTargets DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
-message(STATUS "Targets: ${allTargets}")
+message(STATUS "Targets: ${allTargets}\n")
 
