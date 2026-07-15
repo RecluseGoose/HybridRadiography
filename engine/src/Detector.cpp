@@ -58,6 +58,29 @@ DetBase::DetBase(uint xres, uint yres, double stlUnitToPix, double detDist, doub
 	part_offset[2] = offsetZ;
 }
 
+DetBase::DetBase(uint xres, uint yres, double hfov, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ, double* external_buffer_ptr)
+: lBuffer(xres, yres, external_buffer_ptr)
+{
+	stlUnitToPix_ = xres / (2.0*det_dist_*std::tan(0.5*hfov*DEG2RAD));
+	det_xres_ = xres;
+	det_yres_ = yres;
+	detPixOffsX = 0.5*(xres - 1.0);
+	detPixOffsY = 0.5*(yres - 1.0);
+	initialised = true;
+	
+	vm::matrix rotmat_w2d_vm;	// rotation matrix b/w world and det
+	vm::matrix rotmat_d2w_vm;	// rotation matrix b/w det and world
+	euler_matrix(eulerX, eulerY, eulerZ, sxyz, rotmat_w2d_vm);
+	euler_matrix(-eulerZ, -eulerY, -eulerX, szyx, rotmat_d2w_vm);
+	rotmat_w2d = to_glm(rotmat_w2d_vm);
+	rotmat_d2w = to_glm(rotmat_d2w_vm);
+
+	lBuffer.init(lDefault);
+	part_offset[0] = offsetX;
+	part_offset[1] = offsetY;
+	part_offset[2] = offsetZ;
+}
+
 int DetBase::getFacetSign(vec3 source, geom::Facet &fac, bool flipNorms) {
 	return (flipNorms ^ (getRayFacDotProd(source, fac) > 0)) ? -1 : +1;
 }

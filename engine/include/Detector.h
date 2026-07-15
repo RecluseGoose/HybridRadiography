@@ -12,7 +12,8 @@ class DetBase {
 
 public:
 	DetBase(uint RESLN_X, uint RESLN_Y, double hfov, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ);
-	DetBase(uint RESLN_X, uint RESLN_Y, double stlUnitToPix, double detDist, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ);
+	DetBase(uint RESLN_X, uint RESLN_Y, double hfov, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ, double* external_buffer_ptr);
+	DetBase(uint RESLN_X, uint RESLN_Y, double stlUnitToPix, double detDist, double eulerX, double eulerY, double eulerZ, double offsetX, double offsetY, double offsetZ);	
 	~DetBase();
 	void projectAllToDet(unsigned long N, const vec3* coordsIn_w, const vec3& meshCentre, std::vector<vec2>& detCoords_dp);
 	unsigned int coordinateHitImage(unsigned long N, const vec3* coordsIn_w, const vec3& meshCentre);

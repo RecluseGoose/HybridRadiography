@@ -53,27 +53,25 @@ py::array_t<double> calculate_multi(const geom::Mesh& mesh, const SetupContainer
 
     py::array::ShapeContainer shape = {
         static_cast<py::ssize_t>(nShots),
-        static_cast<py::ssize_t>(setup.xres),
-        static_cast<py::ssize_t>(setup.yres)
+        static_cast<py::ssize_t>(setup.yres),
+        static_cast<py::ssize_t>(setup.xres)
     };
 
     py::array_t<double> result(shape);
-    auto buf = result.mutable_unchecked<3>(); // 3D accessor
-    
+
+    auto info = result.request();
+    double* buffer_ptr = static_cast<double*>(info.ptr);
+    py::ssize_t shot_stride = setup.xres*setup.yres;
+
     #pragma omp parallel for
     for (py::ssize_t iShot = 0; iShot< nShots; ++iShot){
+        double* shot_ptr = buffer_ptr + iShot * shot_stride;
         MaterialPath mp(
             setup.xres, setup.yres, setup.hfov[iShot],
             setup.euler[iShot][0], setup.euler[iShot][1], setup.euler[iShot][2],
-            setup.offset[iShot][0], setup.offset[iShot][1],setup.offset[iShot][2]
+            setup.offset[iShot][0], setup.offset[iShot][1],setup.offset[iShot][2], shot_ptr
         );
         mp.calcLengthBuffer(mesh);
-        // copy data to numpy
-        for (py::ssize_t x = 0; x < setup.xres; ++x){
-            for (py::ssize_t y = 0; y < setup.yres; ++y){
-                buf(iShot,x,y) = mp.lBuffer(x,y);
-            }
-        }
     }
     return result;
 }
